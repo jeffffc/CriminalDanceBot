@@ -16,7 +16,7 @@ namespace Database
     public partial class CrimDanceDb : DbContext
     {
         public CrimDanceDb()
-            : base(RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey("SOFTWARE\\MyTelegramBot").GetValue("DbConnectionString").ToString())
+            : base(RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey("SOFTWARE\\CriminalDanceBot").GetValue("DbConnectionString").ToString())
         {
         }
     

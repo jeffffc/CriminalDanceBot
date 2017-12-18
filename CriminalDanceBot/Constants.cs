@@ -11,7 +11,7 @@ namespace CriminalDanceBot
     public class Constants
     {
         // Token from registry
-        private static RegistryKey _key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey("SOFTWARE\\MyTelegramBot");
+        private static RegistryKey _key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey("SOFTWARE\\CriminalDanceBot");
         public static string GetBotToken(string key)
         {
             return _key.GetValue(key, "").ToString();
