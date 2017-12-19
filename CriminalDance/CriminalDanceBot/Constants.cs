@@ -23,5 +23,16 @@ namespace CriminalDanceBot
         }
         public static long LogGroupId = -1001374190576;
         public static int[] Dev = new int[] { 106665913 };
+
+        #region GameConstants
+        public static int JoinTime = 120;
+        public static int JoinTimeMax = 300;
+#if DEBUG
+        public static int ChooseCardTime = 100;
+#else
+        public static int ChooseCardTime = 45;
+#endif
+
+        #endregion
     }
 }

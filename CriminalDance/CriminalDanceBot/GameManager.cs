@@ -73,5 +73,23 @@ namespace CriminalDanceBot
         }
         #endregion
 
+        #region Handle Buttons
+        public static void HandleQuery(this GameManager gm, CallbackQuery query, string[] args)
+        {
+            // args[0] = GameGuid
+            // args[1] = playerId
+            // args[2] = gameActionType
+            // args[3] = cardId
+            var game = Bot.Gm.GetGameByGuid(Guid.Parse(args[0]));
+            if (game == null)
+            {
+                //
+            }
+            else
+            {
+                game.HandleQuery(query, args);
+            }
+        }
+        #endregion
     }
 }

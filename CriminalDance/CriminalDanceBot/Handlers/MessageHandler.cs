@@ -21,6 +21,8 @@ namespace CriminalDanceBot.Handlers
                     string[] args = text.Contains(' ')
                                     ? new[] { text.Split(' ')[0].ToLower(), text.Remove(0, text.IndexOf(' ') + 1) }
                                     : new[] { text.ToLower(), null };
+                    if (args[0].EndsWith('@' + Bot.Me.Username.ToLower()))
+                        args[0] = args[0].Remove(args[0].Length - Bot.Me.Username.Length - 1);
                     if (msg.Text.StartsWith("/"))
                     {
                         args[0] = args[0].Substring(1);

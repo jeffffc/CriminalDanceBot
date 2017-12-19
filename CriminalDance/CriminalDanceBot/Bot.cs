@@ -20,10 +20,33 @@ namespace CriminalDanceBot
         internal static HashSet<Models.Command> Commands = new HashSet<Models.Command>();
         public delegate void CommandMethod(Message msg, string[] args);
 
+        
         internal static Message Send(long chatId, string text, IReplyMarkup replyMarkup = null, ParseMode parseMode = ParseMode.Markdown, bool disableWebPagePreview = true, bool disableNotification = false)
         {
-            return Send(chatId, text, replyMarkup, parseMode, disableWebPagePreview, disableNotification);
+            try
+            {
+                return BotMethods.Send(chatId, text, replyMarkup, parseMode, disableWebPagePreview, disableNotification);
+            }
+            catch (Exception ex)
+            {
+                Helper.LogError(ex);
+                return new Message();
+            }
         }
+
+        internal static Message Edit(long chatId, int oldMessageId, string text, IReplyMarkup replyMarkup = null, ParseMode parseMode = ParseMode.Markdown, bool disableWebPagePreview = true, bool disableNotification = false)
+        {
+            try
+            {
+                return BotMethods.Edit(chatId, oldMessageId, text, replyMarkup, parseMode, disableWebPagePreview, disableNotification);
+            }
+            catch (Exception ex)
+            {
+                ex.LogError();
+                return new Message();
+            }
+        }
+        
     }
 
     public static class BotMethods
@@ -68,6 +91,19 @@ namespace CriminalDanceBot
             }
         }
 
+        public static Message Reply(long chatId, int oldMessageId, string text, IReplyMarkup replyMarkup = null, ParseMode parseMode = ParseMode.Markdown, bool disableWebPagePreview = true, bool disableNotification = false)
+        {
+            try
+            {
+                return Bot.Api.SendTextMessageAsync(chatId, text, parseMode, disableWebPagePreview, disableNotification, oldMessageId, replyMarkup).Result;
+            }
+            catch (Exception e)
+            {
+                e.LogError();
+                return null;
+            }
+        }
+
         public static Message ReplyNoQuote(this Message m, string text, IReplyMarkup replyMarkup = null, ParseMode parseMode = ParseMode.Markdown, bool disableWebPagePreview = true, bool disableNotification = false)
         {
             try
@@ -92,6 +128,19 @@ namespace CriminalDanceBot
                         new InlineKeyboardUrlButton("Start me!", $"https://t.me/{Bot.Me.Username}") }));
                 }
                 return m.Reply("I have sent you a PM");
+            }
+            catch (Exception e)
+            {
+                e.LogError();
+                return null;
+            }
+        }
+
+        public static Message Edit(long chatId, int oldMessageId, string text, IReplyMarkup replyMarkup = null, ParseMode parseMode = ParseMode.Markdown, bool disableWebPagePreview = true, bool disableNotification = false)
+        {
+            try
+            {
+                return Bot.Api.EditMessageTextAsync(chatId, oldMessageId, text, parseMode, disableWebPagePreview, replyMarkup).Result;
             }
             catch (Exception e)
             {

@@ -35,9 +35,9 @@ namespace CriminalDanceBot.Handlers
             new Task(() => { MessageHandler.HandleMessage(e.Message); }).Start();
         }
 
-        private static void BotOnCallbackQueryReceived(object sender, CallbackQueryEventArgs callbackQueryEventArgs)
+        private static void BotOnCallbackQueryReceived(object sender, CallbackQueryEventArgs e)
         {
-
+            new Task(() => { CallbackQueryHandler.HandleQuery(e.CallbackQuery); }).Start();
         }
 
         private static void BotOnReceiveError(object sender, ReceiveErrorEventArgs receiveErrorEventArgs)

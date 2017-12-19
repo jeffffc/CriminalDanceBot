@@ -86,11 +86,13 @@
     <Compile Include="Constants.cs" />
     <Compile Include="CriminalDance.cs" />
     <Compile Include="GameManager.cs" />
+    <Compile Include="Handlers\CallbackQueryHandler.cs" />
     <Compile Include="Handlers\MainHandler.cs" />
     <Compile Include="Handlers\MessageHandler.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="Models\Command.cs" />
     <Compile Include="Models\XCard.cs" />
+    <Compile Include="Models\XCardDeck.cs" />
     <Compile Include="Models\XPlayer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

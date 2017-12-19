@@ -11,6 +11,15 @@ namespace CriminalDanceBot.Models
         public string Name { get; set; }
         public string Desc { get; set; }
         public XCardType Type { get; set; }
+        public string Id { get; set; }
+
+        public XCard(XCardType CardType)
+        {
+            Name = CardType.ToString();
+            Desc = CardType.ToString();
+            Type = CardType;
+            Id = Guid.NewGuid().ToString().Substring(24);
+        }
     }
 
     public enum XCardType

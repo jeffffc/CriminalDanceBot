@@ -9,11 +9,31 @@ namespace CriminalDanceBot.Models
 {
     public class XPlayer
     {
-        public User TelegramUser { get; set; }
+        public int TelegramUserId { get; set; }
         public string Name { get; set; }
         public int Id { get; set; }
         public string CardsInHand { get; set; } = null;
         public XCard TempCard { get; set; } = null;
         public bool CardChanged { get; set; } = false;
+        public List<XCard> Cards { get; set; } = new List<XCard>();
+        public List<XCard> UsedCards { get; set; } = new List<XCard>();
+
+        public string CardChoice1 { get; set; } = null;
+        public string CardChoice2 { get; set; } = null;
+        public int? PlayerChoice1 { get; set; } = 0;
+        public int? PlayerChoice2 { get; set; } = 0;
+
+        public QuestionAsked CurrentQuestion { get; set; }
+    }
+
+    public class QuestionAsked
+    {
+        public QuestionType Type { get; set; }
+        public int MessageId { get; set; } = 0;
+    }
+
+    public enum QuestionType
+    {
+        Card, Player
     }
 }
