@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.IO;
 using Telegram.Bot.Types.InlineKeyboardButtons;
 using System.Xml.Linq;
+using NGettext;
 
 namespace CriminalDanceBot
 {
@@ -33,6 +34,11 @@ namespace CriminalDanceBot
 
         public Locale Locale;
         public string Language = "English";
+        private static ICatalog _Catalog;
+
+
+        public XPlayer Winner;
+        public XCardType WinnerType;
 
         public CriminalDance(long chatId, User u, string groupName)
         {
@@ -43,6 +49,7 @@ namespace CriminalDanceBot
                 GroupName = groupName;
                 DbGroup = db.Groups.FirstOrDefault(x => x.GroupId == ChatId);
                 LoadLanguage(DbGroup.Language);
+                _Catalog = new Catalog("en_US", "./Languages/");
                 if (DbGroup == null)
                     Bot.Gm.RemoveGame(this);
             }
@@ -73,7 +80,7 @@ namespace CriminalDanceBot
                     var specialTime = JoinTime - i;
                     if (new int[] { 10, 30, 60 }.Contains(specialTime))
                     {
-                        Bot.Send(ChatId, $"You still have {specialTime}s to join.");
+                        Bot.Send(ChatId, T._("You still have {0}s to join.", specialTime));
                     }
                     Thread.Sleep(1000);
                 }
@@ -139,6 +146,7 @@ namespace CriminalDanceBot
                         }
                         NextPlayer();
                     }
+                    EndGame();
                     #endregion
                     this.Phase = GamePhase.Ending;
                 }
@@ -242,8 +250,12 @@ namespace CriminalDanceBot
                         UseCard(p, card);
                         break;
                     case XCardType.Culprit:
-                        if (p.Cards.Count == 1) { }
-                        // to do
+                        if (p.Cards.Count == 1)
+                        {
+                            Winner = p;
+                            WinnerType = XCardType.Culprit;
+                            NowAction = GameAction.Ending;
+                        }
                         else
                         {
                             p.ReAnswer = true;
@@ -504,7 +516,8 @@ namespace CriminalDanceBot
                             if (p2.Cards.FirstOrDefault(x => x.Type == XCardType.Alibi) == null)
                             {
                                 // has culprit, no alibi ==> lose
-                                // EndGame();
+                                Winner = p;
+                                WinnerType = XCardType.Detective;
                                 NowAction = GameAction.Ending;
                             }
                             else
@@ -589,7 +602,8 @@ namespace CriminalDanceBot
                 {
                     if (cardChosen.Type == XCardType.Culprit)
                     {
-                        //EndGame()
+                        Winner = p;
+                        WinnerType = XCardType.Dog;
                         // Dog wins
                         Send($"{p.Name} used Dog on {p2.Name} and {p2.Name} threw out the Culprit! {p.Name} won!");
                         NowAction = GameAction.Ending;
@@ -689,6 +703,31 @@ namespace CriminalDanceBot
             }
         }
 
+        public void EndGame()
+        {
+            var msg = "";
+            switch (WinnerType)
+            {
+                case XCardType.Culprit:
+                    var culprit = Winner;
+                    var accomplices = Players.FindAll(x => x.Accomplice == true);
+                    msg = $"{culprit.Name} the culprit ";
+                    if (accomplices.Count > 0)
+                        msg += $"and the accomplices, {accomplices.Select(x => x.Name).Aggregate((x, y) => x + "and" + y)}, ";
+                    msg += "won the game!";
+                    break;
+                case XCardType.Dog:
+                    var dog = Winner;
+                    msg = $"{dog.Name} the Dog made the culprit blow their cover. {dog.Name} won!";
+                    break;
+                case XCardType.Detective:
+                    var detective = Winner;
+                    msg = $"{detective.Name} found out who the culprit is. All but the culprit and their accomplices won!";
+                    break;
+            }
+            Send(msg);
+            Phase = GamePhase.Ending;
+        }
         #endregion
 
         #region Helpers
@@ -939,6 +978,49 @@ namespace CriminalDanceBot
                         $"Error getting string {key} with parameters {(args != null && args.Length > 0 ? args.Aggregate((a, b) => a + "," + b.ToString()) : "none")}",
                         e);
                 }
+            }
+        }
+
+        internal class T
+        {
+            public static string _(string text)
+            {
+                return _Catalog.GetString(text);
+            }
+
+            public static string _(string text, params object[] args)
+            {
+                return _Catalog.GetString(text, args);
+            }
+
+            public static string _n(string text, string pluralText, long n)
+            {
+                return _Catalog.GetPluralString(text, pluralText, n);
+            }
+
+            public static string _n(string text, string pluralText, long n, params object[] args)
+            {
+                return _Catalog.GetPluralString(text, pluralText, n, args);
+            }
+
+            public static string _p(string context, string text)
+            {
+                return _Catalog.GetParticularString(context, text);
+            }
+
+            public static string _p(string context, string text, params object[] args)
+            {
+                return _Catalog.GetParticularString(context, text, args);
+            }
+
+            public static string _pn(string context, string text, string pluralText, long n)
+            {
+                return _Catalog.GetParticularPluralString(context, text, pluralText, n);
+            }
+
+            public static string _pn(string context, string text, string pluralText, long n, params object[] args)
+            {
+                return _Catalog.GetParticularPluralString(context, text, pluralText, n, args);
             }
         }
         #endregion

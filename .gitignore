@@ -259,3 +259,8 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+
+# language related
+Languages/*.mo
+/CriminalDance/CriminalDanceBot/Languages/en_US.mo
+/CriminalDance/CriminalDanceBot/Languages/en_US.mo
