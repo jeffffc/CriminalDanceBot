@@ -91,6 +91,7 @@
     <Compile Include="Handlers\MessageHandler.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="Models\Command.cs" />
+    <Compile Include="Models\Locale.cs" />
     <Compile Include="Models\XCard.cs" />
     <Compile Include="Models\XCardDeck.cs" />
     <Compile Include="Models\XPlayer.cs" />

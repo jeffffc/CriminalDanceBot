@@ -24,6 +24,9 @@ namespace CriminalDanceBot.Models
         public int? PlayerChoice2 { get; set; } = 0;
 
         public QuestionAsked CurrentQuestion { get; set; }
+        public bool ReAnswer { get; set; } = false;
+
+        public bool Accomplice { get; set; } = false;
     }
 
     public class QuestionAsked

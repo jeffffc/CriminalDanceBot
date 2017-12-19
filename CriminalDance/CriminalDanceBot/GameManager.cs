@@ -79,7 +79,7 @@ namespace CriminalDanceBot
             // args[0] = GameGuid
             // args[1] = playerId
             // args[2] = gameActionType
-            // args[3] = cardId
+            // args[3] = cardId / playerId
             var game = Bot.Gm.GetGameByGuid(Guid.Parse(args[0]));
             if (game == null)
             {

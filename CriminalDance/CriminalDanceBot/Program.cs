@@ -9,17 +9,22 @@ using CriminalDanceBot.Handlers;
 using CriminalDanceBot.Models;
 using System.Threading;
 using ConsoleTables;
+using System.Xml.Linq;
+using System.IO;
 
 namespace CriminalDanceBot
 {
     class Program
     {
-        
+        internal static XDocument English;
+
         static void Main(string[] args)
         {
             Bot.Api = new TelegramBotClient(Constants.GetBotToken("BotToken"));
             Bot.Me = Bot.Api.GetMeAsync().Result;
-            
+
+            English = XDocument.Load(Path.Combine(Constants.GetLangDirectory(), "English.xml"));
+
             Bot.Gm = new GameManager();
 
             Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
@@ -61,10 +66,10 @@ namespace CriminalDanceBot
                 msg += Environment.NewLine + $"Number of Games: {gameCount.ToString()}";
                 Console.WriteLine(msg);
 
-                var table = new ConsoleTable("Game GUID", "Phase", "# of Players");
+                var table = new ConsoleTable("Game GUID", "Phase", "InGame Action", "# of Players");
                 foreach (CriminalDance game in games)
                 {
-                    table.AddRow(game.Id.ToString(), game.Phase.ToString(), game.Players.Count().ToString());
+                    table.AddRow(game.Id.ToString(), game.Phase.ToString(), game.Phase == CriminalDance.GamePhase.InGame ? game.NowAction.ToString() : "------", game.Players.Count().ToString());
                 }
                 table.Write(Format.Alternative);
                 

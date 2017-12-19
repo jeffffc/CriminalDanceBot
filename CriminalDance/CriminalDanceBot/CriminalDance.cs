@@ -11,6 +11,7 @@ using Database;
 using System.Diagnostics;
 using System.IO;
 using Telegram.Bot.Types.InlineKeyboardButtons;
+using System.Xml.Linq;
 
 namespace CriminalDanceBot
 {
@@ -30,6 +31,9 @@ namespace CriminalDanceBot
         public GameAction NowAction = GameAction.FirstFinder;
         private int _playerList = 0;
 
+        public Locale Locale;
+        public string Language = "English";
+
         public CriminalDance(long chatId, User u, string groupName)
         {
             #region Creating New Game - Preparation
@@ -38,13 +42,14 @@ namespace CriminalDanceBot
                 ChatId = chatId;
                 GroupName = groupName;
                 DbGroup = db.Groups.FirstOrDefault(x => x.GroupId == ChatId);
+                LoadLanguage(DbGroup.Language);
                 if (DbGroup == null)
                     Bot.Gm.RemoveGame(this);
             }
             // something
             #endregion
 
-            Bot.Send(chatId, "A new game has been started!");
+            Bot.Send(chatId, GetTranslation("NewGame", u.FirstName));
             AddPlayer(u, true);
             new Thread(GameTimer).Start();
         }
@@ -99,25 +104,38 @@ namespace CriminalDanceBot
 
                     #region Start!
                     FirstFinder();
+                    foreach (var player in Players)
+                    {
+                        SendPM(player, GenerateOwnCard(player));
+                    }
                     while (NowAction != GameAction.Ending)
                     {
                         _playerList = Send(GeneratePlayerList()).MessageId;
-                        switch (NowAction)
+                        while (NowAction != GameAction.Next)
                         {
-                            case GameAction.NormalCard:
-                                NormalActions();
-                                break;
-                            case GameAction.Barter:
-                                Barter();
-                                break;
-                            case GameAction.Rumor:
-                                Rumor();
-                                break;
-                            case GameAction.InfoExchange:
-                                InfoExchange();
-                                break;
-                            default:
-                                break;
+                            switch (NowAction)
+                            {
+                                case GameAction.NormalCard:
+                                    NormalActions();
+                                    break;
+                                case GameAction.Barter:
+                                    Barter();
+                                    break;
+                                case GameAction.Rumor:
+                                    Rumor();
+                                    break;
+                                case GameAction.InfoExchange:
+                                    InfoExchange();
+                                    break;
+                                case GameAction.Detective:
+                                    Detective();
+                                    break;
+                                case GameAction.Dog:
+                                    Dog();
+                                    break;
+                                default:
+                                    break;
+                            }
                         }
                         NextPlayer();
                     }
@@ -156,11 +174,13 @@ namespace CriminalDanceBot
             }
         }
 
-        public void UseCard(XPlayer p, XCard card)
+        public void UseCard(XPlayer p, XCard card, bool dump = false)
         {
             var c = p.Cards.FirstOrDefault(x => x == card);
             p.UsedCards.Add(c);
             p.Cards.Remove(c);
+            if (!dump)
+                Send($"{p.Name} just used {card.Name}");
         }
 
         public void NormalActions()
@@ -169,7 +189,8 @@ namespace CriminalDanceBot
             {
                 var p = PlayerQueue.First();
                 p.CardChoice1 = null;
-                SendMenu(p, "Which card do you want to use?", GenerateMenu(p, p.Cards, GameAction.NormalCard), QuestionType.Card);
+                if (p.ReAnswer != true)
+                    SendMenu(p, "Which card do you want to use?", GenerateMenu(p, p.Cards, GameAction.NormalCard), QuestionType.Card);
                 for (int i = 0; i < Constants.ChooseCardTime; i++)
                 {
                     Thread.Sleep(1000);
@@ -187,13 +208,70 @@ namespace CriminalDanceBot
                 {
                     // ?
                 }
-                
+
                 if (p.CardChoice1 == null)
-                    p.CardChoice1 = p.Cards[Helper.RandomNum(p.Cards.Count)].Id;
+                {
+                    DumpCard(p);
+                    NowAction = GameAction.Next;
+                }
                 var card = p.Cards.FirstOrDefault(x => x.Id == p.CardChoice1);
-                UseCard(p, card);
-                Send($"{p.Name} just used {card.Name}");
                 p.CurrentQuestion = null;
+
+                // What card?
+                switch (card.Type)
+                {
+                    case XCardType.Accomplice:
+                        if (!p.Accomplice)
+                        {
+                            p.Accomplice = true;
+                            Send($"{p.Name} declared themselves as an accomplice.");
+                            p.Name += " (Accomplice)";
+                        }
+                        else
+                        {
+                            Send($"{p.Name} was already an accomplice, card dumped.");
+                        }
+                        NowAction = GameAction.Next;
+                        UseCard(p, card);
+                        break;
+                    case XCardType.Alibi:
+                    case XCardType.Bystander:
+                    case XCardType.Witness:
+                        Send("This card is useless at this moment, card dumped");
+                        NowAction = GameAction.Next;
+                        UseCard(p, card);
+                        break;
+                    case XCardType.Culprit:
+                        if (p.Cards.Count == 1) { }
+                        // to do
+                        else
+                        {
+                            p.ReAnswer = true;
+                            SendMenu(p, "You can only use Culprit when you have 1 card left, please choose again.", GenerateMenu(p, p.Cards, GameAction.NormalCard), QuestionType.Card);
+                            NowAction = GameAction.NormalCard;
+                        }
+                        break;
+                    case XCardType.Barter:
+                        UseCard(p, card);
+                        NowAction = GameAction.Barter;
+                        break;
+                    case XCardType.Detective:
+                        UseCard(p, card);
+                        NowAction = GameAction.Detective;
+                        break;
+                    case XCardType.Dog:
+                        UseCard(p, card);
+                        NowAction = GameAction.Dog;
+                        break;
+                    case XCardType.InformationExchange:
+                        UseCard(p, card);
+                        NowAction = GameAction.InfoExchange;
+                        break;
+                    case XCardType.Rumor:
+                        UseCard(p, card);
+                        NowAction = GameAction.Rumor;
+                        break;
+                }
             }
             catch (Exception ex)
             {
@@ -203,24 +281,363 @@ namespace CriminalDanceBot
 
         public void Barter()
         {
-            // to be done
+            try
+            {
+                var p = PlayerQueue.First();
+                XPlayer p2 = null;
+                p.PlayerChoice1 = 0;
+                SendMenu(p, "Which player do you want to use Barter on?", GenerateMenu(p, Players.FindAll(x => x != p), GameAction.Barter), QuestionType.Player);
+                for (int i = 0; i < Constants.ChooseCardTime; i++)
+                {
+                    Thread.Sleep(1000);
+                    if (p.PlayerChoice1 != 0)
+                        break;
+                }
+                try
+                {
+                    if (p.CurrentQuestion.MessageId != 0 && p.PlayerChoice1 == 0)
+                    {
+                        SendTimesUp(p, p.CurrentQuestion.MessageId);
+                    }
+                }
+                catch
+                {
+                    // ?
+                }
+                if (p.PlayerChoice1 == 0)
+                {
+                    p2 = Players.FindAll(x => x != p)[Helper.RandomNum(Players.Count - 1)];
+                }
+                else
+                {
+                    p2 = Players.FirstOrDefault(x => x.TelegramUserId == p.PlayerChoice1);
+                }
+                var BarterPlayers = new List<XPlayer> { p, p2 };
+                foreach (XPlayer player in BarterPlayers)
+                {
+                    player.CardChoice1 = null;
+                    SendMenu(player, "BARTER: Which card do you wanna exchange?", GenerateMenu(player, player.Cards, GameAction.Barter), QuestionType.Card);
+                }
+                for (int i = 0; i < Constants.ChooseCardTime; i++)
+                {
+                    Thread.Sleep(1000);
+                    if (BarterPlayers.All(x => x.CardChoice1 != null))
+                        break;
+                }
+                try
+                {
+                    foreach (var player in BarterPlayers)
+                    {
+                        if (player.CurrentQuestion.MessageId != 0 && player.CardChoice1 == null)
+                        {
+                            SendTimesUp(player, player.CurrentQuestion.MessageId);
+                        }
+                    }
+                }
+                catch
+                { 
+                    //
+                }
+                foreach (var player in BarterPlayers)
+                {
+                    if (player.CardChoice1 == null)
+                    {
+                        player.CardChoice1 = player.Cards[Helper.RandomNum(player.Cards.Count)].Id;
+                    }
+                }
+
+                // switch the cards now
+                var c1 = p.Cards.FirstOrDefault(x => x.Id == p.CardChoice1);
+                var c2 = p2.Cards.FirstOrDefault(x => x.Id == p2.CardChoice1);
+                p.Cards.Remove(c1);
+                p2.Cards.Remove(c2);
+                p.Cards.Add(c2);
+                p2.Cards.Add(c1);
+                p.CardChanged = true;
+                p2.CardChanged = true;
+                Send($"{p.Name} and {p2.Name} exchanged their cards.");
+                NowAction = GameAction.Next;
+            }
+            catch (Exception ex)
+            {
+                Log(ex);
+            }
         }
 
         public void InfoExchange()
         {
-            // to be done
+            try
+            {
+                foreach (XPlayer player in Players)
+                {
+                    player.CardChoice1 = null;
+                    SendMenu(player, "INFO-EXCHANGE: Which card do you wanna exchange?", GenerateMenu(player, player.Cards, GameAction.InfoExchange), QuestionType.Card);
+                }
+                for (int i = 0; i < Constants.ChooseCardTime; i++)
+                {
+                    Thread.Sleep(1000);
+                    if (Players.All(x => x.CardChoice1 != null))
+                        break;
+                }
+                try
+                {
+                    foreach (var player in Players)
+                    {
+                        if (player.CurrentQuestion.MessageId != 0 && player.CardChoice1 == null)
+                        {
+                            SendTimesUp(player, player.CurrentQuestion.MessageId);
+                        }
+                    }
+                }
+                catch
+                {
+                    //
+                }
+                foreach (var player in Players)
+                {
+                    if (player.CardChoice1 == null)
+                    {
+                        player.CardChoice1 = player.Cards[Helper.RandomNum(player.Cards.Count)].Id;
+                    }
+                }
+
+                // switch the cards now
+                for (int i = 0; i < PlayerQueue.Count; i++)
+                {
+                    var p = PlayerQueue.ElementAt(i);
+                    XPlayer next;
+                    if (i < PlayerQueue.Count - 1)
+                        next = PlayerQueue.ElementAt(i + 1);
+                    else
+                        next = PlayerQueue.First();
+                    var card = p.Cards.FirstOrDefault(x => x.Id == p.CardChoice1);
+                    p.Cards.Remove(card);
+                    next.Cards.Add(card);
+                    p.CardChanged = true;
+                }
+                Send($"Information Exchange Completed.");
+                NowAction = GameAction.Next;
+            }
+            catch (Exception ex)
+            {
+                Log(ex);
+            }
+        }
+
+        public void Rumor()
+        {
+            try
+            {
+                foreach (var player in Players)
+                    player.CardChoice1 = player.Cards[Helper.RandomNum(player.Cards.Count)].Id;
+
+
+                // switch the cards now
+                for (int i = 0; i < PlayerQueue.Count; i++)
+                {
+                    var p = PlayerQueue.ElementAt(i);
+                    XPlayer next;
+                    if (i < PlayerQueue.Count - 1)
+                        next = PlayerQueue.ElementAt(i + 1);
+                    else
+                        next = PlayerQueue.First();
+                    var card = p.Cards.FirstOrDefault(x => x.Id == p.CardChoice1);
+                    p.Cards.Remove(card);
+                    next.Cards.Add(card);
+                    p.CardChanged = true;
+                }
+                Send($"Rumor Completed.");
+                NowAction = GameAction.Next;
+            }
+            catch (Exception ex)
+            {
+                Log(ex);
+            }
+        }
+
+        public void Detective()
+        {
+            {
+                try
+                {
+                    var p = PlayerQueue.First();
+                    XPlayer p2 = null;
+                    p.PlayerChoice1 = 0;
+                    SendMenu(p, "Whdo you think is the Culprit?", GenerateMenu(p, Players.FindAll(x => x != p), GameAction.Detective), QuestionType.Player);
+                    for (int i = 0; i < Constants.ChooseCardTime; i++)
+                    {
+                        Thread.Sleep(1000);
+                        if (p.PlayerChoice1 != 0)
+                            break;
+                    }
+                    try
+                    {
+                        if (p.CurrentQuestion.MessageId != 0 && p.PlayerChoice1 == 0)
+                        {
+                            SendTimesUp(p, p.CurrentQuestion.MessageId);
+                        }
+                    }
+                    catch
+                    {
+                        // ?
+                    }
+                    if (p.PlayerChoice1 == 0)
+                    {
+                        Send($"{p.Name} failed to choose in time. Detective card dumped.");
+                        NowAction = GameAction.Next;
+                        return;
+                    }
+                    else
+                    {
+                        p2 = Players.FirstOrDefault(x => x.TelegramUserId == p.PlayerChoice1);
+                    }
+                    if (p2 != null)
+                    {
+                        // check if p2 has culprit + if he has alibi
+                        if (p2.Cards.FirstOrDefault(x => x.Type == XCardType.Culprit) == null)
+                        {
+                            // no culprit
+                            Send($"{p2.Name} is not the culprit.");
+                        }
+                        else
+                        {
+                            if (p2.Cards.FirstOrDefault(x => x.Type == XCardType.Alibi) == null)
+                            {
+                                // has culprit, no alibi ==> lose
+                                // EndGame();
+                                NowAction = GameAction.Ending;
+                            }
+                            else
+                            {
+                                // is culprit but has alibi ==> nothing happens
+                                Send($"{p2.Name} is not the culprit.");
+                            }
+                        }
+                    }
+                    NowAction = GameAction.Next;
+                }
+                catch (Exception ex)
+                {
+                    Log(ex);
+                }
+            }
+        }
+
+        public void Dog()
+        {
+            try
+            {
+                var p = PlayerQueue.First();
+                XPlayer p2 = null;
+                p.PlayerChoice1 = 0;
+                SendMenu(p, "Which player do you want to use Dog on?", GenerateMenu(p, Players.FindAll(x => x != p), GameAction.Dog), QuestionType.Player);
+                for (int i = 0; i < Constants.ChooseCardTime; i++)
+                {
+                    Thread.Sleep(1000);
+                    if (p.PlayerChoice1 != 0)
+                        break;
+                }
+                try
+                {
+                    if (p.CurrentQuestion.MessageId != 0 && p.PlayerChoice1 == 0)
+                    {
+                        SendTimesUp(p, p.CurrentQuestion.MessageId);
+                    }
+                }
+                catch
+                {
+                    // ?
+                }
+                if (p.PlayerChoice1 == 0)
+                {
+                    p2 = Players.FindAll(x => x != p)[Helper.RandomNum(Players.Count - 1)];
+                }
+                else
+                {
+                    p2 = Players.FirstOrDefault(x => x.TelegramUserId == p.PlayerChoice1);
+                }
+
+                p2.CardChoice1 = null;
+                SendMenu(p2, "DOG: Which card do you want to throw away?", GenerateMenu(p2, p2.Cards, GameAction.Dog), QuestionType.Card);
+
+                for (int i = 0; i < Constants.ChooseCardTime; i++)
+                {
+                    Thread.Sleep(1000);
+                    if (p2.CardChoice1 != null)
+                        break;
+                }
+                try
+                {
+                    if (p2.CurrentQuestion.MessageId != 0 && p2.CardChoice1 == null)
+                    {
+                        SendTimesUp(p2, p2.CurrentQuestion.MessageId);
+                    }
+                }
+                catch
+                {
+                    //
+                }
+
+                if (p2.CardChoice1 == null)
+                {
+                    p2.CardChoice1 = p2.Cards[Helper.RandomNum(p2.Cards.Count)].Id;
+                }
+
+
+                var cardChosen = p2.Cards.FirstOrDefault(x => x.Id == p2.CardChoice1);
+                if (cardChosen != null)
+                {
+                    if (cardChosen.Type == XCardType.Culprit)
+                    {
+                        //EndGame()
+                        // Dog wins
+                        Send($"{p.Name} used Dog on {p2.Name} and {p2.Name} threw out the Culprit! {p.Name} won!");
+                        NowAction = GameAction.Ending;
+                        return;
+                    }
+                    else
+                    {
+                        UseCard(p2, cardChosen, true);
+                        p.Cards.Add(cardChosen);
+                        Send($"{p.Name} used Dog on {p2.Name} and {p2.Name} gave {cardChosen.Name} to {p.Name}.");
+                        p.CardChanged = true;
+                        p2.CardChanged = true;
+                    }
+                }
+                NowAction = GameAction.Next;
+            }
+            catch (Exception ex)
+            {
+                Log(ex);
+            }
         }
 
         public void NextPlayer()
         {
             var p = PlayerQueue.Dequeue();
+            p.ReAnswer = false;
+            p.PlayerChoice1 = 0;
+            p.PlayerChoice2 = 0;
+            p.CardChoice1 = null;
+            p.CardChoice2 = null;
             PlayerQueue.Enqueue(p);
+            NowAction = GameAction.NormalCard;
+            foreach (var player in Players)
+            {
+                if (player.CardChanged)
+                    SendPM(player, GenerateOwnCard(player));
+                player.CardChanged = false;
+            }
         }
 
-        public void Rumor()
+        public void DumpCard(XPlayer p)
         {
-            // to be done
+            var cards = p.Cards.FindAll(x => x.Type != XCardType.Culprit);
+            var c = cards[Helper.RandomNum(cards.Count)];
+            Send($"{p.Name} did not choose in time, I helped him dump a random card: {c.Name}");
+            UseCard(p, c, true);
         }
+
         #endregion
 
         #region Preparation
@@ -305,7 +722,7 @@ namespace CriminalDanceBot
             // args[0] = GameGuid
             // args[1] = playerId
             // args[2] = gameActionType
-            // args[3] = cardId
+            // args[3] = cardId / playerId
             XPlayer p = Players.FirstOrDefault(x => x.TelegramUserId == Int32.Parse(args[1]));
             if (p != null)
             {
@@ -316,6 +733,30 @@ namespace CriminalDanceBot
                         Bot.Edit(p.TelegramUserId, p.CurrentQuestion.MessageId, "OK!");
                         p.CardChoice1 = args[3];
                         break;
+                    case GameAction.Barter:
+                        Bot.Edit(p.TelegramUserId, p.CurrentQuestion.MessageId, "OK!");
+                        int a;
+                        if (int.TryParse(args[3], out a))
+                            p.PlayerChoice1 = a;
+                        else
+                            p.CardChoice1 = args[3];
+                        break;
+                    case GameAction.InfoExchange:
+                        Bot.Edit(p.TelegramUserId, p.CurrentQuestion.MessageId, "OK!");
+                        p.CardChoice1 = args[3];
+                        break;
+                    case GameAction.Detective:
+                        Bot.Edit(p.TelegramUserId, p.CurrentQuestion.MessageId, "OK!");
+                        p.PlayerChoice1 = Int32.Parse(args[3]);
+                        break;
+                    case GameAction.Dog:
+                        Bot.Edit(p.TelegramUserId, p.CurrentQuestion.MessageId, "OK!");
+                        int b;
+                        if (int.TryParse(args[3], out b))
+                            p.PlayerChoice1 = b;
+                        else
+                            p.CardChoice1 = args[3];
+                        break;
                 }
             }
         }
@@ -323,6 +764,11 @@ namespace CriminalDanceBot
         public Message Send(string msg)
         {
             return Bot.Send(ChatId, msg);
+        }
+
+        public Message SendPM(XPlayer p, string msg)
+        {
+            return Bot.Send(p.TelegramUserId, msg);
         }
 
         public Message SendMenu(XPlayer p, string msg, InlineKeyboardMarkup markup, QuestionType qType)
@@ -365,6 +811,25 @@ namespace CriminalDanceBot
             return new InlineKeyboardMarkup(rows.ToArray());
         }
 
+        public InlineKeyboardMarkup GenerateMenu(XPlayer p, List<XPlayer> players, GameAction action)
+        {
+            var buttons = new List<Tuple<string, string>>();
+            foreach (XPlayer player in players)
+            {
+                buttons.Add(new Tuple<string, string>(player.Name, $"{this.Id}|{p.TelegramUserId}|{(int)action}|{player.TelegramUserId}"));
+            }
+            var row = new List<InlineKeyboardButton>();
+            var rows = new List<InlineKeyboardButton[]>();
+
+            for (int i = 0; i < buttons.Count; i++)
+            {
+                row.Clear();
+                row.Add(new InlineKeyboardCallbackButton(buttons[i].Item1, buttons[i].Item2));
+                rows.Add(row.ToArray());
+            }
+            return new InlineKeyboardMarkup(rows.ToArray());
+        }
+
         public string GeneratePlayerList()
         {
             try
@@ -379,6 +844,16 @@ namespace CriminalDanceBot
                 Log(ex);
                 return "";
             }
+        }
+
+        public string GenerateOwnCard(XPlayer p)
+        {
+            string m = "Cards in Hand:\n";
+            for (int i = 0; i < p.Cards.Count; i++)
+            {
+                m += $"{i + 1}. {p.Cards[i].Name}\n";
+            }
+            return m;
         }
 
         public void Dispose()
@@ -397,6 +872,76 @@ namespace CriminalDanceBot
         }
         #endregion
 
+        #region Language related
+        public void LoadLanguage(string language)
+        {
+            try
+            {
+                var files = Directory.GetFiles(Constants.GetLangDirectory());
+                var file = files.First(x => Path.GetFileNameWithoutExtension(x) == language);
+                {
+                    var doc = XDocument.Load(file);
+                    Locale = new Locale
+                    {
+                        Language = Path.GetFileNameWithoutExtension(file),
+                        File = doc
+                    };
+                }
+                Language = Locale.Language;
+            }
+            catch
+            {
+                if (language != "English")
+                    LoadLanguage("English");
+            }
+        }
+
+        private string GetTranslation(string key, params object[] args)
+        {
+            try
+            {
+                var strings = Locale.File.Descendants("string").FirstOrDefault(x => x.Attribute("key")?.Value == key) ??
+                              Program.English.Descendants("string").FirstOrDefault(x => x.Attribute("key")?.Value == key);
+                if (strings != null)
+                {
+                    var values = strings.Descendants("value");
+                    var choice = Helper.RandomNum(values.Count());
+                    var selected = values.ElementAt(choice - 1).Value;
+
+                    return String.Format(selected, args).Replace("\\n", Environment.NewLine);
+                }
+                else
+                {
+                    throw new Exception($"Error getting string {key} with parameters {(args != null && args.Length > 0 ? args.Aggregate((a, b) => a + "," + b.ToString()) : "none")}");
+                }
+            }
+            catch (Exception e)
+            {
+                try
+                {
+                    //try the english string to be sure
+                    var strings =
+                        Program.English.Descendants("string").FirstOrDefault(x => x.Attribute("key")?.Value == key);
+                    var values = strings?.Descendants("value");
+                    if (values != null)
+                    {
+                        var choice = Helper.RandomNum(values.Count());
+                        var selected = values.ElementAt(choice - 1).Value;
+                        // ReSharper disable once AssignNullToNotNullAttribute
+                        return String.Format(selected, args).Replace("\\n", Environment.NewLine);
+                    }
+                    else
+                        throw new Exception("Cannot load english string for fallback");
+                }
+                catch
+                {
+                    throw new Exception(
+                        $"Error getting string {key} with parameters {(args != null && args.Length > 0 ? args.Aggregate((a, b) => a + "," + b.ToString()) : "none")}",
+                        e);
+                }
+            }
+        }
+        #endregion
         #region Constants
 
         public enum GamePhase
@@ -406,7 +951,7 @@ namespace CriminalDanceBot
 
         public enum GameAction
         {
-            FirstFinder, NormalCard, Rumor, InfoExchange, Barter, Ending
+            FirstFinder, NormalCard, Rumor, InfoExchange, Barter, Detective, Dog, Ending, Next
         }
 
         #endregion
