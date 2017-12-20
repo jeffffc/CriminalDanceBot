@@ -11,6 +11,7 @@ namespace CriminalDanceBot.Models
     {
         public int TelegramUserId { get; set; }
         public string Name { get; set; }
+        public string Username { get; set; }
         public int Id { get; set; }
         public string CardsInHand { get; set; } = null;
         public XCard TempCard { get; set; } = null;

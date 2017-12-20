@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Args;
+using System.Runtime.Caching;
 using CriminalDanceBot.Handlers;
 using CriminalDanceBot.Models;
 using System.Threading;
@@ -17,12 +18,15 @@ namespace CriminalDanceBot
     class Program
     {
         internal static XDocument English;
+        public static Dictionary<string, XDocument> Langs;
+        public static readonly MemoryCache AdminCache = new MemoryCache("GroupAdmins");
 
         static void Main(string[] args)
         {
             Bot.Api = new TelegramBotClient(Constants.GetBotToken("BotToken"));
             Bot.Me = Bot.Api.GetMeAsync().Result;
 
+            Langs = new Dictionary<string, XDocument>();
             English = XDocument.Load(Path.Combine(Constants.GetLangDirectory(), "English.xml"));
 
             Bot.Gm = new GameManager();
@@ -44,7 +48,19 @@ namespace CriminalDanceBot
                 }
             }
 
-            MainHandler.HandleUpdates(Bot.Api);
+            var files = Directory.GetFiles(Constants.GetLangDirectory());
+            try
+            {
+                foreach (var file in files)
+                {
+                    var lang = Path.GetFileNameWithoutExtension(file);
+                    XDocument doc = XDocument.Load(file);
+                    Langs.Add(lang, doc);
+                }
+            }
+            catch { }
+
+            Handler.HandleUpdates(Bot.Api);
             Bot.Api.StartReceiving();
             new Thread(UpdateConsole).Start();
             Console.ReadLine();

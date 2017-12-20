@@ -1,6 +1,8 @@
-﻿using System;
+﻿using CriminalDanceBot.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Caching;
 using System.Text;
 using System.Threading.Tasks;
 using Telegram.Bot;
@@ -21,20 +23,12 @@ namespace CriminalDanceBot
         public delegate void CommandMethod(Message msg, string[] args);
 
         
-        internal static Message Send(long chatId, string text, IReplyMarkup replyMarkup = null, ParseMode parseMode = ParseMode.Markdown, bool disableWebPagePreview = true, bool disableNotification = false)
+        internal static Message Send(long chatId, string text, IReplyMarkup replyMarkup = null, ParseMode parseMode = ParseMode.Html, bool disableWebPagePreview = true, bool disableNotification = false)
         {
-            try
-            {
-                return BotMethods.Send(chatId, text, replyMarkup, parseMode, disableWebPagePreview, disableNotification);
-            }
-            catch (Exception ex)
-            {
-                Helper.LogError(ex);
-                return new Message();
-            }
+            return BotMethods.Send(chatId, text, replyMarkup, parseMode, disableWebPagePreview, disableNotification);
         }
 
-        internal static Message Edit(long chatId, int oldMessageId, string text, IReplyMarkup replyMarkup = null, ParseMode parseMode = ParseMode.Markdown, bool disableWebPagePreview = true, bool disableNotification = false)
+        internal static Message Edit(long chatId, int oldMessageId, string text, IReplyMarkup replyMarkup = null, ParseMode parseMode = ParseMode.Html, bool disableWebPagePreview = true, bool disableNotification = false)
         {
             try
             {
@@ -43,20 +37,26 @@ namespace CriminalDanceBot
             catch (Exception ex)
             {
                 ex.LogError();
-                return new Message();
+                return null;
             }
         }
-        
-    }
 
-    public static class BotMethods
-    { 
-        #region Messages
-        public static Message Send(long chatId, string text, IReplyMarkup replyMarkup = null, ParseMode parseMode = ParseMode.Markdown, bool disableWebPagePreview = true, bool disableNotification = false)
+        internal static List<GroupAdmin> GetChatAdmins(long chatid, bool forceCacheUpdate = false)
         {
             try
-            {
-                return Bot.Api.SendTextMessageAsync(chatId, text, parseMode, disableWebPagePreview, disableNotification, 0, replyMarkup).Result;
+            {   // Admins are cached for 1 hour
+                string itemIndex = $"{chatid}";
+                List<GroupAdmin> admins = Program.AdminCache[itemIndex] as List<GroupAdmin>; // Read admin list from cache
+                if (admins == null || forceCacheUpdate)
+                {
+                    admins = Api.GetChatAdministratorsAsync(chatid).Result.Select(x =>
+                        new GroupAdmin(x.User.Id, chatid, x.User.FirstName)).ToList();
+
+                    CacheItemPolicy policy = new CacheItemPolicy() { AbsoluteExpiration = DateTime.Now.AddHours(1) };
+                    Program.AdminCache.Set(itemIndex, admins, policy); // Write admin list into cache
+                }
+
+                return admins;
             }
             catch (Exception e)
             {
@@ -64,8 +64,18 @@ namespace CriminalDanceBot
                 return null;
             }
         }
+    }
 
-        public static Message Send(this Chat chat, string text, IReplyMarkup replyMarkup = null, ParseMode parseMode = ParseMode.Markdown, bool disableWebPagePreview = true, bool disableNotification = false)
+    public static class BotMethods
+    { 
+        #region Messages
+        public static Message Send(long chatId, string text, IReplyMarkup replyMarkup = null, ParseMode parseMode = ParseMode.Html, bool disableWebPagePreview = true, bool disableNotification = false)
+        {
+            return Bot.Api.SendTextMessageAsync(chatId, text, parseMode, disableWebPagePreview, disableNotification, 0, replyMarkup).Result;
+
+        }
+
+        public static Message Send(this Chat chat, string text, IReplyMarkup replyMarkup = null, ParseMode parseMode = ParseMode.Html, bool disableWebPagePreview = true, bool disableNotification = false)
         {
             try
             {
@@ -78,7 +88,7 @@ namespace CriminalDanceBot
             }
         }
 
-        public static Message Reply(this Message m, string text, IReplyMarkup replyMarkup = null, ParseMode parseMode = ParseMode.Markdown, bool disableWebPagePreview = true, bool disableNotification = false)
+        public static Message Reply(this Message m, string text, IReplyMarkup replyMarkup = null, ParseMode parseMode = ParseMode.Html, bool disableWebPagePreview = true, bool disableNotification = false)
         {
             try
             {
@@ -91,7 +101,7 @@ namespace CriminalDanceBot
             }
         }
 
-        public static Message Reply(long chatId, int oldMessageId, string text, IReplyMarkup replyMarkup = null, ParseMode parseMode = ParseMode.Markdown, bool disableWebPagePreview = true, bool disableNotification = false)
+        public static Message Reply(long chatId, int oldMessageId, string text, IReplyMarkup replyMarkup = null, ParseMode parseMode = ParseMode.Html, bool disableWebPagePreview = true, bool disableNotification = false)
         {
             try
             {
@@ -104,7 +114,7 @@ namespace CriminalDanceBot
             }
         }
 
-        public static Message ReplyNoQuote(this Message m, string text, IReplyMarkup replyMarkup = null, ParseMode parseMode = ParseMode.Markdown, bool disableWebPagePreview = true, bool disableNotification = false)
+        public static Message ReplyNoQuote(this Message m, string text, IReplyMarkup replyMarkup = null, ParseMode parseMode = ParseMode.Html, bool disableWebPagePreview = true, bool disableNotification = false)
         {
             try
             {
@@ -117,7 +127,7 @@ namespace CriminalDanceBot
             }
         }
 
-        public static Message ReplyPM(this Message m, string text, IReplyMarkup replyMarkup = null, ParseMode parseMode = ParseMode.Markdown, bool disableWebPagePreview = true, bool disableNotification = false)
+        public static Message ReplyPM(this Message m, string text, IReplyMarkup replyMarkup = null, ParseMode parseMode = ParseMode.Html, bool disableWebPagePreview = true, bool disableNotification = false)
         {
             try
             {
@@ -136,7 +146,7 @@ namespace CriminalDanceBot
             }
         }
 
-        public static Message Edit(long chatId, int oldMessageId, string text, IReplyMarkup replyMarkup = null, ParseMode parseMode = ParseMode.Markdown, bool disableWebPagePreview = true, bool disableNotification = false)
+        public static Message Edit(long chatId, int oldMessageId, string text, IReplyMarkup replyMarkup = null, ParseMode parseMode = ParseMode.Html, bool disableWebPagePreview = true, bool disableNotification = false)
         {
             try
             {

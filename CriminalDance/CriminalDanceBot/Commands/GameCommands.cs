@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Command = CriminalDanceBot.Attributes.Command;
 using Telegram.Bot.Types;
+using Database;
 
 namespace CriminalDanceBot
 {
@@ -20,7 +21,7 @@ namespace CriminalDanceBot
             }
             else
             {
-                msg.Reply("A game has already been started before.");
+                msg.Reply(GetTranslation("ExistingGame", GetLanguage(msg.Chat.Id)));
             }
         }
 
@@ -86,12 +87,13 @@ namespace CriminalDanceBot
             CriminalDance game = Bot.Gm.GetGameByChatId(msg.Chat.Id);
             if (game == null)
             {
-                msg.Reply("There is no game...");
+                msg.Reply(GetTranslation("NoGame", GetLanguage(msg.Chat.Id)));
             }
             else
             {
                 Bot.Gm.HandleMessage(msg);
             }
         }
+        
     }
 }

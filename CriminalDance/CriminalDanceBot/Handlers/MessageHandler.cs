@@ -10,7 +10,7 @@ using Database;
 
 namespace CriminalDanceBot.Handlers
 {
-    class MessageHandler
+    partial class Handler
     {
         public static void HandleMessage(Message msg)
         {
@@ -36,7 +36,7 @@ namespace CriminalDanceBot.Handlers
                                     var DbGroup = db.Groups.FirstOrDefault(x => x.GroupId == msg.Chat.Id);
                                     if (DbGroup == null)
                                     {
-                                        DbGroup = MakeDefaultGroup(msg.Chat);
+                                        DbGroup = Helper.MakeDefaultGroup(msg.Chat);
                                         db.Groups.Add(DbGroup);
                                         db.SaveChanges();
                                     }
@@ -48,7 +48,7 @@ namespace CriminalDanceBot.Handlers
                                 return;
                             }
 
-                            if (cmd.AdminOnly)
+                            if (cmd.AdminOnly && !Helper.IsGroupAdmin(msg))
                             {
                                 msg.Reply("You aren't a group admin!");
                                 return;
@@ -83,18 +83,5 @@ namespace CriminalDanceBot.Handlers
             }
         }
 
-        internal static Group MakeDefaultGroup(Chat chat)
-        {
-            return new Group
-            {
-                GroupId = chat.Id,
-                Name = chat.Title,
-                Language = "English",
-                CreatedBy = "Command",
-                CreatedTime = DateTime.UtcNow,
-                UserName = chat.Username,
-                GroupLink = chat.Username == "" ? $"https://telegram.me/{chat.Username}" : null
-            };
-        }
     }
 }

@@ -26,7 +26,7 @@ namespace CriminalDanceBot
         {
             return Path.GetFullPath(_languageDirectory);
         }
-    public static long LogGroupId = -1001374190576;
+        public static long LogGroupId = -1001374190576;
         public static int[] Dev = new int[] { 106665913 };
 
         #region GameConstants
