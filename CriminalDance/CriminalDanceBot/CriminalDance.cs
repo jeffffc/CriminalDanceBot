@@ -67,6 +67,9 @@ namespace CriminalDanceBot
                 {
                     if (this.Phase == GamePhase.InGame)
                         break;
+                    if (this.Phase == GamePhase.Ending)
+                        return;
+
                     if (_secondsToAdd != 0)
                     {
                         i = Math.Max(i - _secondsToAdd, Constants.JoinTime - Constants.JoinTimeMax);
