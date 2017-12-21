@@ -848,7 +848,13 @@ namespace CriminalDanceBot
             }
             if (msg.Text.ToLower().StartsWith("/forcestart"))
             {
-                Phase = GamePhase.InGame;
+                if (this.Players.Count() >= 3) Phase = GamePhase.InGame;
+                else
+                {
+                    Send(GetTranslation("GameEnded"));
+                    Phase = GamePhase.Ending;
+                    Bot.Gm.RemoveGame(this);
+                }
             }
             if (msg.Text.ToLower().StartsWith("/killgame"))
             {
