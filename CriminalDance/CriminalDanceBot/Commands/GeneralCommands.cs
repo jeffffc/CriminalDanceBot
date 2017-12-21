@@ -90,5 +90,12 @@ namespace CriminalDanceBot
             var menu = Handler.GetConfigMenu(msg.Chat.Id);
             Bot.Send(msg.From.Id, GetTranslation("WhatToDo", GetLanguage(msg.From.Id)), replyMarkup: menu);
         }
+
+        [Command(Trigger = "maintenance", DevOnly = true)]
+        public static void Maintenance(Message msg, string[] args)
+        {
+            Program.MaintMode = !Program.MaintMode;
+            Bot.Send(msg.Chat.Id, $"Maintenance Mode: {Program.MaintMode}");
+        }
     }
 }

@@ -20,6 +20,7 @@ namespace CriminalDanceBot
         internal static XDocument English;
         public static Dictionary<string, XDocument> Langs;
         public static readonly MemoryCache AdminCache = new MemoryCache("GroupAdmins");
+        public static bool MaintMode = false;
 
         static void Main(string[] args)
         {

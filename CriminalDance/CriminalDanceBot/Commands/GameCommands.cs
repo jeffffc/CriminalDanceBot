@@ -17,6 +17,13 @@ namespace CriminalDanceBot
             CriminalDance game = Bot.Gm.GetGameByChatId(msg.Chat.Id);
             if (game == null)
             {
+                if (Program.MaintMode)
+                {
+                    Bot.Send(msg.Chat.Id, GetTranslation("CantStartGameMaintenance", GetLanguage(msg.Chat.Id)));
+                    return;
+                }
+
+
                 Bot.Gm.AddGame(new CriminalDance(msg.Chat.Id, msg.From, msg.Chat.Title));
             }
             else
