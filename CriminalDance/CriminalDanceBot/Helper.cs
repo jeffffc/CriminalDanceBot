@@ -25,7 +25,7 @@ namespace CriminalDanceBot
             Console.WriteLine($"Source: {e.Source}");
             */
             //Exception err;
-            string m  = $"Message: <code>{e.Message}</code>\nSource: <code>{e.Source}</code>\nStackTrace:\n{e.StackTrace}\n";
+            // string m  = $"Message: <code>{e.Message}</code>\nSource: <code>{e.Source}</code>\nStackTrace:\n{e.StackTrace}\n";
             /*err = e.InnerException;
             while (err != null)
             {
@@ -36,7 +36,19 @@ namespace CriminalDanceBot
             Console.WriteLine($"StackTrace:\n{m}");
             Console.WriteLine("================================");
             Console.ResetColor();
+
             */
+            string m = "Error occured." + Environment.NewLine + Environment.NewLine;
+            var trace = $"<code>{e.StackTrace}</code>";
+            do
+            {
+                m += $"<code>{e.Message}</code>" + Environment.NewLine + Environment.NewLine;
+                e = e.InnerException;
+            }
+            while (e != null);
+
+            m += trace;
+
             Bot.Send(Constants.LogGroupId, m);
 #else
             using (var sw = new StreamWriter(Constants.GetLogPath(), true))
