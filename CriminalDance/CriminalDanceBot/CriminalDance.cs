@@ -856,7 +856,7 @@ namespace CriminalDanceBot
                 Phase = GamePhase.Ending;
                 Bot.Gm.RemoveGame(this);
             }
-            if (msg.ToLower().Text.StartsWith("/seq"))
+            if (msg.Text.ToLower().StartsWith("/seq"))
             {
                 if (_playerList == 0)
                     Reply(msg.MessageId, GetTranslation("PlayerSequenceNotStarted"));
