@@ -836,22 +836,27 @@ namespace CriminalDanceBot
         #region Helpers
         public void HandleMessage(Message msg)
         {
-            if (msg.Text.StartsWith("/join"))
+            if (msg.Text.ToLower().StartsWith("/join"))
             {
                 if (Phase == GamePhase.Joining)
                     AddPlayer(msg.From);
             }
-            if (msg.Text.StartsWith("/forcestart"))
+            if (msg.Text.ToLower().StartsWith("/startgame"))
+            {
+                if (Phase == GamePhase.Joining)
+                    AddPlayer(msg.From);
+            }
+            if (msg.Text.ToLower().StartsWith("/forcestart"))
             {
                 Phase = GamePhase.InGame;
             }
-            if (msg.Text.StartsWith("/killgame"))
+            if (msg.Text.ToLower().StartsWith("/killgame"))
             {
                 Send(GetTranslation("KillGame"));
                 Phase = GamePhase.Ending;
                 Bot.Gm.RemoveGame(this);
             }
-            if (msg.Text.StartsWith("/seq"))
+            if (msg.ToLower().Text.StartsWith("/seq"))
             {
                 if (_playerList == 0)
                     Reply(msg.MessageId, GetTranslation("PlayerSequenceNotStarted"));

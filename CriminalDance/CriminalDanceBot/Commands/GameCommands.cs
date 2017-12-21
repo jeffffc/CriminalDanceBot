@@ -21,7 +21,8 @@ namespace CriminalDanceBot
             }
             else
             {
-                msg.Reply(GetTranslation("ExistingGame", GetLanguage(msg.Chat.Id)));
+                Bot.Gm.HandleMessage(msg);
+                // msg.Reply(GetTranslation("ExistingGame", GetLanguage(msg.Chat.Id)));
             }
         }
 
