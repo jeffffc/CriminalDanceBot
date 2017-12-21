@@ -57,7 +57,7 @@ namespace CriminalDanceBot.Handlers
                 {
                     var values = strings.Descendants("value");
                     var choice = Helper.RandomNum(values.Count());
-                    var selected = values.ElementAt(choice - 1).Value;
+                    var selected = values.ElementAt(choice).Value;
 
                     return String.Format(selected, args).Replace("\\n", Environment.NewLine);
                 }
@@ -77,7 +77,7 @@ namespace CriminalDanceBot.Handlers
                     if (values != null)
                     {
                         var choice = Helper.RandomNum(values.Count());
-                        var selected = values.ElementAt(choice - 1).Value;
+                        var selected = values.ElementAt(choice).Value;
                         // ReSharper disable once AssignNullToNotNullAttribute
                         return String.Format(selected, args).Replace("\\n", Environment.NewLine);
                     }

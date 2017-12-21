@@ -78,6 +78,8 @@ namespace CriminalDanceBot
                     {
                         Bot.Send(ChatId, GetTranslation("JoinTimeSpecialSeconds", specialTime));
                     }
+                    if (Players.Count == 8)
+                        break;
                     Thread.Sleep(1000);
                 }
                 if (this.Players.Count() >= 3)
@@ -101,7 +103,7 @@ namespace CriminalDanceBot
                     {
                         allCards += $"{p.Name} has got: {p.Cards.Select(i => i.Name).Aggregate((i, j) => i + ", " + j)}" + Environment.NewLine;
                     }
-                    Bot.Send(ChatId, allCards);
+                    // Bot.Send(ChatId, allCards);
 #endif
                     #endregion
 
@@ -139,12 +141,20 @@ namespace CriminalDanceBot
                                 case GameAction.Witness:
                                     Witness();
                                     break;
+                                case GameAction.Ending:
+                                    break;
                                 default:
                                     break;
                             }
+                            if (NowAction == GameAction.Ending || Phase == GamePhase.Ending)
+                                break;
                         }
+                        if (NowAction == GameAction.Ending || Phase == GamePhase.Ending)
+                            break;
                         NextPlayer();
                     }
+                    if (Phase == GamePhase.Ending)
+                        break;
                     EndGame();
                     #endregion
                     this.Phase = GamePhase.Ending;
@@ -188,6 +198,8 @@ namespace CriminalDanceBot
             p.Cards.Remove(c);
             if (!dump)
                 Send(GetTranslation("GeneralUseCard", GetName(p), GetName(card)));
+            if (p.Cards.Count == 0)
+                p.UsedUp = true;
         }
 
         public void NormalActions()
@@ -220,6 +232,7 @@ namespace CriminalDanceBot
                 {
                     DumpCard(p);
                     NowAction = GameAction.Next;
+                    return;
                 }
                 var card = p.Cards.FirstOrDefault(x => x.Id == p.CardChoice1);
                 p.CurrentQuestion = null;
@@ -241,9 +254,12 @@ namespace CriminalDanceBot
                         NowAction = GameAction.Next;
                         UseCard(p, card);
                         break;
+                    case XCardType.Witness:
+                        UseCard(p, card);
+                        NowAction = GameAction.Witness;
+                        break;
                     case XCardType.Alibi:
                     case XCardType.Bystander:
-                    case XCardType.Witness:
                         Send(GetTranslation("UselessCard"));
                         NowAction = GameAction.Next;
                         UseCard(p, card);
@@ -272,9 +288,10 @@ namespace CriminalDanceBot
                         break;
                     case XCardType.Dog:
                         UseCard(p, card);
+                        p.TempCard = card;
                         NowAction = GameAction.Dog;
                         break;
-                    case XCardType.InformationExchange:
+                    case XCardType.InfoExchange:
                         UseCard(p, card);
                         NowAction = GameAction.InfoExchange;
                         break;
@@ -295,9 +312,15 @@ namespace CriminalDanceBot
             try
             {
                 var p = PlayerQueue.First();
+                if (p.UsedUp)
+                {
+                    Send(GetTranslation("BarterUsedUp", GetName(p)));
+                    NowAction = GameAction.Next;
+                    return;
+                }
                 XPlayer p2 = null;
                 p.PlayerChoice1 = 0;
-                SendMenu(p, GetTranslation("UseCardOn", GetName(XCardType.Barter)), GenerateMenu(p, Players.FindAll(x => x != p), GameAction.Barter), QuestionType.Player);
+                SendMenu(p, GetTranslation("UseCardOn", GetName(XCardType.Barter)), GenerateMenu(p, Players.FindAll(x => x != p && !x.UsedUp), GameAction.Barter), QuestionType.Player);
                 for (int i = 0; i < Constants.ChooseCardTime; i++)
                 {
                     Thread.Sleep(1000);
@@ -317,7 +340,7 @@ namespace CriminalDanceBot
                 }
                 if (p.PlayerChoice1 == 0)
                 {
-                    p2 = Players.FindAll(x => x != p)[Helper.RandomNum(Players.Count - 1)];
+                    p2 = Players.FindAll(x => x != p && !x.UsedUp)[Helper.RandomNum(Players.FindAll(x => x != p && !x.UsedUp).Count)];
                 }
                 else
                 {
@@ -382,7 +405,7 @@ namespace CriminalDanceBot
                 var p = PlayerQueue.First();
                 XPlayer p2 = null;
                 p.PlayerChoice1 = 0;
-                SendMenu(p, GetTranslation("UseCardOn", GetName(XCardType.Witness)), GenerateMenu(p, Players.FindAll(x => x != p), GameAction.Witness), QuestionType.Player);
+                SendMenu(p, GetTranslation("UseCardOn", GetName(XCardType.Witness)), GenerateMenu(p, Players.FindAll(x => x != p && !x.UsedUp), GameAction.Witness), QuestionType.Player);
                 for (int i = 0; i < Constants.ChooseCardTime; i++)
                 {
                     Thread.Sleep(1000);
@@ -403,6 +426,9 @@ namespace CriminalDanceBot
                 if (p.PlayerChoice1 == 0)
                 {
                     //times up
+                    Send($"{GetName(p)} failed to make a choice in time, skipping.");
+                    NowAction = GameAction.Next;
+                    return;
                 }
                 else
                 {
@@ -427,7 +453,7 @@ namespace CriminalDanceBot
         {
             try
             {
-                foreach (XPlayer player in Players)
+                foreach (XPlayer player in Players.FindAll(x => !x.UsedUp))
                 {
                     player.CardChoice1 = null;
                     SendMenu(player, GetTranslation("InfoExchangeChooseCard"), GenerateMenu(player, player.Cards, GameAction.InfoExchange), QuestionType.Card);
@@ -440,7 +466,7 @@ namespace CriminalDanceBot
                 }
                 try
                 {
-                    foreach (var player in Players)
+                    foreach (var player in Players.FindAll(x => !x.UsedUp))
                     {
                         if (player.CurrentQuestion.MessageId != 0 && player.CardChoice1 == null)
                         {
@@ -452,7 +478,7 @@ namespace CriminalDanceBot
                 {
                     //
                 }
-                foreach (var player in Players)
+                foreach (var player in Players.FindAll(x => !x.UsedUp))
                 {
                     if (player.CardChoice1 == null)
                     {
@@ -461,14 +487,15 @@ namespace CriminalDanceBot
                 }
 
                 // switch the cards now
-                for (int i = 0; i < PlayerQueue.Count; i++)
+                var tempList = PlayerQueue.ToList().FindAll(x => !x.UsedUp);
+                for (int i = 0; i < tempList.Count; i++)
                 {
-                    var p = PlayerQueue.ElementAt(i);
+                    var p = tempList.ElementAt(i);
                     XPlayer next;
-                    if (i < PlayerQueue.Count - 1)
-                        next = PlayerQueue.ElementAt(i + 1);
+                    if (i < tempList.Count - 1)
+                        next = tempList.ElementAt(i + 1);
                     else
-                        next = PlayerQueue.First();
+                        next = tempList.First();
                     var card = p.Cards.FirstOrDefault(x => x.Id == p.CardChoice1);
                     p.Cards.Remove(card);
                     next.Cards.Add(card);
@@ -487,25 +514,35 @@ namespace CriminalDanceBot
         {
             try
             {
-                foreach (var player in Players)
+                foreach (var player in Players.FindAll(x => !x.UsedUp))
                     player.CardChoice1 = player.Cards[Helper.RandomNum(player.Cards.Count)].Id;
 
 
+                var tempList = PlayerQueue.ToList().FindAll(x => !x.UsedUp);
+                foreach (var p in tempList)
+                    p.ToBeSent.Clear();
                 // switch the cards now
-                for (int i = 0; i < PlayerQueue.Count; i++)
+                for (int i = 0; i < tempList.Count; i++)
                 {
-                    var p = PlayerQueue.ElementAt(i);
+                    var p = tempList.ElementAt(i);
                     XPlayer next;
-                    if (i < PlayerQueue.Count - 1)
-                        next = PlayerQueue.ElementAt(i + 1);
+                    if (i < tempList.Count - 1)
+                        next = tempList.ElementAt(i + 1);
                     else
-                        next = PlayerQueue.First();
+                        next = tempList.First();
                     var card = p.Cards.FirstOrDefault(x => x.Id == p.CardChoice1);
                     p.Cards.Remove(card);
                     next.Cards.Add(card);
+                    p.ToBeSent.Add(GetTranslation("RumorGive", GetName(card), GetName(next)));
+                    next.ToBeSent.Add(GetTranslation("RumorReceive", GetName(card), GetName(p)));
                     p.CardChanged = true;
                 }
-                Send(GetTranslation("Rumor Completed."));
+                foreach (var p in tempList)
+                {
+                    SendPM(p, p.ToBeSent.Aggregate((x, y) => x + Environment.NewLine + y));
+                    p.ToBeSent.Clear();
+                }
+                Send(GetTranslation("RumorCompleted"));
                 NowAction = GameAction.Next;
             }
             catch (Exception ex)
@@ -522,7 +559,7 @@ namespace CriminalDanceBot
                     var p = PlayerQueue.First();
                     XPlayer p2 = null;
                     p.PlayerChoice1 = 0;
-                    SendMenu(p, GetTranslation("DetectiveGuessCulprit"), GenerateMenu(p, Players.FindAll(x => x != p), GameAction.Detective), QuestionType.Player);
+                    SendMenu(p, GetTranslation("DetectiveGuessCulprit"), GenerateMenu(p, Players.FindAll(x => x != p && !x.UsedUp), GameAction.Detective), QuestionType.Player);
                     for (int i = 0; i < Constants.ChooseCardTime; i++)
                     {
                         Thread.Sleep(1000);
@@ -566,6 +603,8 @@ namespace CriminalDanceBot
                                 Winner = p;
                                 WinnerType = XCardType.Detective;
                                 NowAction = GameAction.Ending;
+                                Send(GetTranslation("DetectiveCorrect", GetName(p), GetName(p2)));
+                                return;
                             }
                             else
                             {
@@ -590,7 +629,7 @@ namespace CriminalDanceBot
                 var p = PlayerQueue.First();
                 XPlayer p2 = null;
                 p.PlayerChoice1 = 0;
-                SendMenu(p, GetTranslation("UseCardOn", GetName(XCardType.Dog)), GenerateMenu(p, Players.FindAll(x => x != p), GameAction.Dog), QuestionType.Player);
+                SendMenu(p, GetTranslation("UseCardOn", GetName(XCardType.Dog)), GenerateMenu(p, Players.FindAll(x => x != p && !x.UsedUp), GameAction.Dog), QuestionType.Player);
                 for (int i = 0; i < Constants.ChooseCardTime; i++)
                 {
                     Thread.Sleep(1000);
@@ -610,7 +649,7 @@ namespace CriminalDanceBot
                 }
                 if (p.PlayerChoice1 == 0)
                 {
-                    p2 = Players.FindAll(x => x != p)[Helper.RandomNum(Players.Count - 1)];
+                    p2 = Players.FindAll(x => x != p && !x.UsedUp)[Helper.RandomNum(Players.FindAll(x => x != p && !x.UsedUp).Count - 1)];
                 }
                 else
                 {
@@ -659,10 +698,11 @@ namespace CriminalDanceBot
                     else
                     {
                         UseCard(p2, cardChosen, true);
-                        p.Cards.Add(cardChosen);
+                        p2.Cards.Add(p.TempCard); //get the dog as compensation
                         Send(GetTranslation("DogTransferCard", GetName(p), GetName(p2), GetName(cardChosen)));
                         p.CardChanged = true;
                         p2.CardChanged = true;
+                        p.TempCard = null;
                     }
                 }
                 NowAction = GameAction.Next;
@@ -788,6 +828,7 @@ namespace CriminalDanceBot
                     break;
             }
             Send(msg);
+
             Phase = GamePhase.Ending;
         }
         #endregion
@@ -797,7 +838,8 @@ namespace CriminalDanceBot
         {
             if (msg.Text.StartsWith("/join"))
             {
-                AddPlayer(msg.From);
+                if (Phase == GamePhase.Joining)
+                    AddPlayer(msg.From);
             }
             if (msg.Text.StartsWith("/forcestart"))
             {
@@ -833,6 +875,9 @@ namespace CriminalDanceBot
                 {
                     case GameAction.NormalCard:
                         p.CardChoice1 = args[3];
+                        break;
+                    case GameAction.Witness:
+                        p.PlayerChoice1 = Int32.Parse(args[3]);
                         break;
                     case GameAction.Barter:
                         int a;
@@ -1004,6 +1049,9 @@ namespace CriminalDanceBot
         public void Log(Exception ex)
         {
             Helper.LogError(ex);
+            Send("Sorry there is some problem with me, I gonna go die now.");
+            this.Phase = GamePhase.Ending;
+            Bot.Gm.RemoveGame(this);
         }
         #endregion
 
@@ -1041,7 +1089,7 @@ namespace CriminalDanceBot
                 {
                     var values = strings.Descendants("value");
                     var choice = Helper.RandomNum(values.Count());
-                    var selected = values.ElementAt(choice - 1).Value;
+                    var selected = values.ElementAt(choice).Value;
 
                     return String.Format(selected, args).Replace("\\n", Environment.NewLine);
                 }
@@ -1061,7 +1109,7 @@ namespace CriminalDanceBot
                     if (values != null)
                     {
                         var choice = Helper.RandomNum(values.Count());
-                        var selected = values.ElementAt(choice - 1).Value;
+                        var selected = values.ElementAt(choice- 1).Value;
                         // ReSharper disable once AssignNullToNotNullAttribute
                         return String.Format(selected, args).Replace("\\n", Environment.NewLine);
                     }

@@ -80,7 +80,7 @@ namespace CriminalDanceBot
         public static int RandomNum(int size)
         {
             Random rnd = new Random();
-            return rnd.Next(1, size + 1);
+            return rnd.Next(0, size);
         }
 
         public static string ToBold(this object str)

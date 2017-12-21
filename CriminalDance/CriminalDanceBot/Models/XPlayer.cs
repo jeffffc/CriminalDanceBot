@@ -18,6 +18,7 @@ namespace CriminalDanceBot.Models
         public bool CardChanged { get; set; } = false;
         public List<XCard> Cards { get; set; } = new List<XCard>();
         public List<XCard> UsedCards { get; set; } = new List<XCard>();
+        public List<string> ToBeSent { get; set; } = new List<string>();
 
         public string CardChoice1 { get; set; } = null;
         public string CardChoice2 { get; set; } = null;
@@ -28,6 +29,7 @@ namespace CriminalDanceBot.Models
         public bool ReAnswer { get; set; } = false;
 
         public bool Accomplice { get; set; } = false;
+        public bool UsedUp { get; set; } = false;
     }
 
     public class QuestionAsked

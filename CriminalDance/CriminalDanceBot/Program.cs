@@ -60,6 +60,7 @@ namespace CriminalDanceBot
             }
             catch { }
 
+            Bot.Api.GetUpdatesAsync(-1);
             Handler.HandleUpdates(Bot.Api);
             Bot.Api.StartReceiving();
             new Thread(UpdateConsole).Start();

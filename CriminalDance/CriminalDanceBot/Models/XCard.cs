@@ -24,6 +24,6 @@ namespace CriminalDanceBot.Models
 
     public enum XCardType
     {
-        FirstFinder, Culprit, Accomplice, Detective, Alibi, Dog, Rumor, InformationExchange, Witness, Barter, Bystander
+        FirstFinder, Culprit, Accomplice, Detective, Alibi, Dog, Rumor, InfoExchange, Witness, Barter, Bystander
     }
 }

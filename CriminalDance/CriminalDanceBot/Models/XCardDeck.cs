@@ -31,7 +31,7 @@ namespace CriminalDanceBot.Models
                     case XCardType.Witness:
                         num = 3;
                         break;
-                    case XCardType.InformationExchange:
+                    case XCardType.InfoExchange:
                     case XCardType.Barter:
                     case XCardType.Detective:
                         num = 4;
@@ -41,6 +41,7 @@ namespace CriminalDanceBot.Models
                         num = 5;
                         break;
                     case XCardType.FirstFinder:
+                    case XCardType.Culprit:
                     case XCardType.Dog:
                         continue;
                     default:
