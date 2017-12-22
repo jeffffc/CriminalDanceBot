@@ -85,6 +85,15 @@ namespace CriminalDanceBot
                         break;
                     Thread.Sleep(1000);
                 }
+
+                do
+                {
+                    XPlayer p = Players.FirstOrDefault(x => Players.Count(y => y.TelegramUserId == x.TelegramUserId) > 1);
+                    if (p == null) break;
+                    Players.Remove(p);
+                }
+                while (true);
+
                 if (this.Players.Count() >= 3)
                     this.Phase = GamePhase.InGame;
                 if (this.Phase != GamePhase.InGame)
