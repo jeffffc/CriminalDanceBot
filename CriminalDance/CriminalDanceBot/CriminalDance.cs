@@ -85,6 +85,15 @@ namespace CriminalDanceBot
                         break;
                     Thread.Sleep(1000);
                 }
+
+                do
+                {
+                    XPlayer p = Players.FirstOrDefault(x => Players.Count(y => y.TelegramUserId == x.TelegramUserId) > 1);
+                    if (p == null) break;
+                    Players.Remove(p);
+                }
+                while (true);
+
                 if (this.Players.Count() >= 3)
                     this.Phase = GamePhase.InGame;
                 if (this.Phase != GamePhase.InGame)
@@ -98,6 +107,12 @@ namespace CriminalDanceBot
                 else
                 {
                     #region Ready to start game
+                    if (Players.Count < 3)
+                    {
+                        Send(GetTranslation("GameEnded"));
+                        return;
+                    }
+
                     Bot.Send(ChatId, GetTranslation("GameStart"));
                     PrepareGame(Players.Count());
 #if DEBUG
@@ -750,6 +765,17 @@ namespace CriminalDanceBot
             var player = this.Players.FirstOrDefault(x => x.TelegramUserId == u.Id);
             if (player != null)
                 return;
+
+            player = this.Players.FirstOrDefault(x => x.Name.ToLower() == u.FirstName.ToLower());
+            var accomp = GetTranslation("AccompliceAppendName");                     // Avoid joining with (Accomplice) in name
+            if (player != null || u.FirstName.ToLower().Contains(accomp.ToLower()))  // Avoid 2 players having the same name
+            {
+                Send(GetTranslation("ChangeNameToJoin", u.GetName()));
+                return;
+            }
+
+
+
             using (var db = new CrimDanceDb())
             {
                 var DbPlayer = db.Players.FirstOrDefault(x => x.TelegramId == u.Id);
@@ -789,7 +815,37 @@ namespace CriminalDanceBot
             }
             if (!newGame)
                 _secondsToAdd += 15;
-            Bot.Send(ChatId, GetTranslation("JoinedGame", GetName(u)));
+
+            do
+            {
+                XPlayer p = Players.FirstOrDefault(x => Players.Count(y => y.TelegramUserId == x.TelegramUserId) > 1);
+                if (p == null) break;
+                Players.Remove(p);
+            }
+            while (true);
+
+            Send(GetTranslation("JoinedGame", GetName(u)) + Environment.NewLine + GetTranslation("JoinInfo", Players.Count, 3, 8));
+        }
+
+        private void RemovePlayer(User user)
+        {
+            if (this.Phase != GamePhase.Joining) return;
+
+            var player = this.Players.FirstOrDefault(x => x.TelegramUserId == user.Id);
+            if (player == null)
+                return;
+
+            this.Players.Remove(player);
+
+            do
+            {
+                XPlayer p = Players.FirstOrDefault(x => Players.Count(y => y.TelegramUserId == x.TelegramUserId) > 1);
+                if (p == null) break;
+                Players.Remove(p);
+            }
+            while (true);
+
+            Send(GetTranslation("FledGame", user.GetName()) + Environment.NewLine + GetTranslation("JoinInfo", Players.Count, 3, 8));
         }
 
         public void PrepareGame(int NumOfPlayers)
@@ -815,7 +871,7 @@ namespace CriminalDanceBot
             {
                 case XCardType.Culprit:
                     var culprit = Winner;
-                    var accomplices = Players.FindAll(x => x.Accomplice == true);
+                    var accomplices = Players.FindAll(x => x.Accomplice == true && x.TelegramUserId != x.TelegramUserId);
                     msg = GetTranslation("WinningCulprit", GetName(culprit));
                     if (accomplices.Count > 0)
                         msg += GetTranslation("WinningAccomplices", accomplices.Select(x => GetName(x)).Aggregate((x, y) => x + GetTranslation("And") + y));
@@ -844,12 +900,20 @@ namespace CriminalDanceBot
                 if (Phase == GamePhase.Joining)
                     AddPlayer(msg.From);
             }
-            if (msg.Text.ToLower().StartsWith("/startgame"))
+            else if (msg.Text.ToLower().StartsWith("/flee"))
+            {
+                if (Phase == GamePhase.Joining)
+                    RemovePlayer(msg.From);
+
+                else if (Phase == GamePhase.InGame)
+                    Send(GetTranslation("CantFleeRunningGame"));
+            }
+            else if (msg.Text.ToLower().StartsWith("/startgame"))
             {
                 if (Phase == GamePhase.Joining)
                     AddPlayer(msg.From);
             }
-            if (msg.Text.ToLower().StartsWith("/forcestart"))
+            else if (msg.Text.ToLower().StartsWith("/forcestart"))
             {
                 if (this.Players.Count() >= 3) Phase = GamePhase.InGame;
                 else
@@ -859,13 +923,13 @@ namespace CriminalDanceBot
                     Bot.Gm.RemoveGame(this);
                 }
             }
-            if (msg.Text.ToLower().StartsWith("/killgame"))
+            else if (msg.Text.ToLower().StartsWith("/killgame"))
             {
                 Send(GetTranslation("KillGame"));
                 Phase = GamePhase.Ending;
                 Bot.Gm.RemoveGame(this);
             }
-            if (msg.Text.ToLower().StartsWith("/seq"))
+            else if (msg.Text.ToLower().StartsWith("/seq"))
             {
                 if (_playerList == 0)
                     Reply(msg.MessageId, GetTranslation("PlayerSequenceNotStarted"));

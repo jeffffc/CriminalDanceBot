@@ -61,6 +61,20 @@ namespace CriminalDanceBot
             }
         }
 
+        [Command(Trigger = "flee")]
+        public static void FleeGame(Message msg, string[] args)
+        {
+            CriminalDance game = Bot.Gm.GetGameByChatId(msg.Chat.Id);
+            if (game == null)
+            {
+                return;
+            }
+            else
+            {
+                Bot.Gm.HandleMessage(msg);
+            }
+        }
+
         [Command(Trigger = "forcestart")]
         public static void ForceStart(Message msg, string[] args)
         {
