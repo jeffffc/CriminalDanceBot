@@ -8,6 +8,7 @@ using Database;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.InlineKeyboardButtons;
 using Telegram.Bot.Types.ReplyMarkups;
+using System.IO;
 
 namespace CriminalDanceBot.Handlers
 {
@@ -42,6 +43,35 @@ namespace CriminalDanceBot.Handlers
                     {
                         Bot.Edit(query.Message.Chat.Id, query.Message.MessageId, GetTranslation("ConfigDone", GetLanguage(query.From.Id)));
                     }
+                    return;
+                }
+                else if (args[0] == "getlang")
+                {
+                    if (args[1] == "get")
+                    {
+                        try
+                        {
+                            var lang = args[2] ?? "";
+                            if (lang == "") throw new Exception("No language to download was specified");
+                            Bot.Edit(query.Message.Chat.Id, query.Message.MessageId, GetTranslation("OneMoment", GetLanguage(query.From.Id)));
+                            lang += ".xml";
+                            using (var sr = new StreamReader(Path.Combine(Constants.GetLangDirectory(), lang)))
+                            {
+                                var file = new FileToSend(lang, sr.BaseStream);
+                                BotMethods.SendDocument(query.Message.Chat.Id, file);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            e.LogError();
+                            Bot.Edit(query.Message.Chat.Id, query.Message.MessageId, "An error occured.");
+                        }
+                    }
+                    else if (args[1] == "cancel")
+                    {
+                        Bot.Edit(query.Message.Chat.Id, query.Message.MessageId, GetTranslation("ConfigDone", GetLanguage(query.From.Id)));
+                    }
+                    return;
                 }
                 //game
                 var gameId = args[0];
@@ -97,6 +127,29 @@ namespace CriminalDanceBot.Handlers
                 i++;
             }
             twoMenu.Add(new[] { new InlineKeyboardCallbackButton("Back", $"config|back") });
+
+            var menu = new InlineKeyboardMarkup(twoMenu.ToArray());
+            return menu;
+        }
+
+        internal static InlineKeyboardMarkup GetGetLangMenu()
+        {
+            List<InlineKeyboardButton> buttons = new List<InlineKeyboardButton>();
+            //base menu
+            foreach (string lang in Program.Langs.Keys)
+                buttons.Add(new InlineKeyboardCallbackButton(lang, $"getlang|get|{lang}"));
+            var twoMenu = new List<InlineKeyboardButton[]>();
+            for (var i = 0; i < buttons.Count; i++)
+            {
+                if (buttons.Count - 1 == i)
+                {
+                    twoMenu.Add(new[] { buttons[i] });
+                }
+                else
+                    twoMenu.Add(new[] { buttons[i], buttons[i + 1] });
+                i++;
+            }
+            twoMenu.Add(new[] { new InlineKeyboardCallbackButton("Cancel", $"getlang|cancel") });
 
             var menu = new InlineKeyboardMarkup(twoMenu.ToArray());
             return menu;

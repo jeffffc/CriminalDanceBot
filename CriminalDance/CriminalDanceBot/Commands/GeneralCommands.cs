@@ -7,6 +7,7 @@ using Command = CriminalDanceBot.Attributes.Command;
 using Telegram.Bot.Types;
 using Database;
 using CriminalDanceBot.Handlers;
+using Telegram.Bot.Types.Enums;
 
 namespace CriminalDanceBot
 {
@@ -96,6 +97,14 @@ namespace CriminalDanceBot
         {
             Program.MaintMode = !Program.MaintMode;
             Bot.Send(msg.Chat.Id, $"Maintenance Mode: {Program.MaintMode}");
+        }
+
+        [Command(Trigger = "getlang")]
+        public static void GetLang(Message msg, string[] args)
+        {
+            if (!Constants.Dev.Contains(msg.From.Id) && msg.Chat.Type != ChatType.Private) return;
+
+            Bot.Send(msg.Chat.Id, GetTranslation("GetWhichLang", GetLanguage(msg.Chat.Id)), Handler.GetGetLangMenu());
         }
     }
 }

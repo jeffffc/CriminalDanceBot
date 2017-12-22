@@ -158,6 +158,19 @@ namespace CriminalDanceBot
                 return null;
             }
         }
+
+        public static Message SendDocument(long chatId, FileToSend fileToSend, string caption = null, IReplyMarkup replyMarkup = null, bool disableNotification = false)
+        {
+            try
+            {
+                return Bot.Api.SendDocumentAsync(chatId, fileToSend, caption, disableNotification, 0, replyMarkup).Result;
+            }
+            catch (Exception e)
+            {
+                e.LogError();
+                return null;
+            }
+        }
         #endregion
 
     }
