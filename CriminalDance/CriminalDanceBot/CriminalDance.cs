@@ -765,6 +765,17 @@ namespace CriminalDanceBot
             var player = this.Players.FirstOrDefault(x => x.TelegramUserId == u.Id);
             if (player != null)
                 return;
+
+            player = this.Players.FirstOrDefault(x => x.Name.ToLower() == u.FirstName.ToLower());
+            var accomp = GetTranslation("AccompliceAppendName");                     // Avoid joining with (Accomplice) in name
+            if (player != null || u.FirstName.ToLower().Contains(accomp.ToLower()))  // Avoid 2 players having the same name
+            {
+                Send(GetTranslation("ChangeNameToJoin", u.GetName()));
+                return;
+            }
+
+
+
             using (var db = new CrimDanceDb())
             {
                 var DbPlayer = db.Players.FirstOrDefault(x => x.TelegramId == u.Id);
