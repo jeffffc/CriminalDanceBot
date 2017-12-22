@@ -173,5 +173,20 @@ namespace CriminalDanceBot
         }
         #endregion
 
+        #region Callbacks
+        public static bool AnswerCallback(CallbackQuery query, string text = null, bool popup = false)
+        {
+            try
+            {
+                return Bot.Api.AnswerCallbackQueryAsync(query.Id, text, popup).Result;
+            }
+            catch (Exception e)
+            {
+                e.LogError();
+                return false;
+            }
+        }
+        #endregion
+
     }
 }

@@ -452,11 +452,21 @@ namespace CriminalDanceBot
                 {
                     p2 = Players.FirstOrDefault(x => x.TelegramUserId == p.PlayerChoice1);
                 }
+                /*
                 var toBeDeleted = SendPM(p, GenerateOwnCard(p2, true));
                 Task.Factory.StartNew(() => {
                     Thread.Sleep(30000);
                     Bot.Api.DeleteMessageAsync(p.TelegramUserId, toBeDeleted.MessageId);
                     });
+                */
+                var menu = new InlineKeyboardMarkup(
+                    new InlineKeyboardButton[]
+                    {
+                        new InlineKeyboardCallbackButton(GetTranslation("WitnessWatchButton"), $"{Id}|{p.TelegramUserId}|w|{p2.TelegramUserId}"),
+                    }
+                );
+
+                Bot.Send(p.TelegramUserId, GetTranslation("WitnessWatchMessage", p2.GetName()), menu);
                 Send(GetTranslation("WitnessWatched", GetName(p), GetName(p2)));
                 NowAction = GameAction.Next;
             }
@@ -947,6 +957,18 @@ namespace CriminalDanceBot
             XPlayer p = Players.FirstOrDefault(x => x.TelegramUserId == Int32.Parse(args[1]));
             if (p != null)
             {
+                if (args[2] == "w")
+                {
+                    XPlayer p2 = Players.FirstOrDefault(x => x.TelegramUserId == Int32.Parse(args[3]));
+                    if (p2 != null)
+                    {
+                        BotMethods.AnswerCallback(query, GenerateOwnCard(p2, true), true);
+                        Bot.Edit(query.From.Id, query.Message.MessageId, GetTranslation("ReceivedButton"));
+                    }
+                    return;
+                }
+
+
                 GameAction actionType = (GameAction)Int32.Parse(args[2]);
                 Bot.Edit(p.TelegramUserId, p.CurrentQuestion.MessageId, GetTranslation("ReceivedButton"));
                 switch (actionType)
@@ -1104,7 +1126,7 @@ namespace CriminalDanceBot
         {
             string m = "";
             if (witness)
-                m = GetTranslation("CardsInPlayer", GetName(p));
+                m = GetTranslation("CardsInPlayer", p.Name) + Environment.NewLine;
             else
                 m = GetTranslation("CardsInHand") + Environment.NewLine;
             for (int i = 0; i < p.Cards.Count; i++)
