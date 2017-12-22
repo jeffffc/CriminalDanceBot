@@ -871,7 +871,7 @@ namespace CriminalDanceBot
             {
                 case XCardType.Culprit:
                     var culprit = Winner;
-                    var accomplices = Players.FindAll(x => x.Accomplice == true && x.TelegramUserId != x.TelegramUserId);
+                    var accomplices = Players.FindAll(x => x.Accomplice == true && x.TelegramUserId != culprit.TelegramUserId);
                     msg = GetTranslation("WinningCulprit", GetName(culprit));
                     if (accomplices.Count > 0)
                         msg += GetTranslation("WinningAccomplices", accomplices.Select(x => GetName(x)).Aggregate((x, y) => x + GetTranslation("And") + y));
