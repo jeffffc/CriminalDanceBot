@@ -107,6 +107,12 @@ namespace CriminalDanceBot
                 else
                 {
                     #region Ready to start game
+                    if (Players.Count < 3)
+                    {
+                        Send(GetTranslation("GameEnded"));
+                        return;
+                    }
+
                     Bot.Send(ChatId, GetTranslation("GameStart"));
                     PrepareGame(Players.Count());
 #if DEBUG
@@ -798,6 +804,15 @@ namespace CriminalDanceBot
             }
             if (!newGame)
                 _secondsToAdd += 15;
+
+            do
+            {
+                XPlayer p = Players.FirstOrDefault(x => Players.Count(y => y.TelegramUserId == x.TelegramUserId) > 1);
+                if (p == null) break;
+                Players.Remove(p);
+            }
+            while (true);
+
             Send(GetTranslation("JoinedGame", GetName(u)) + Environment.NewLine + GetTranslation("JoinInfo", Players.Count, 3, 8));
         }
 
@@ -810,6 +825,15 @@ namespace CriminalDanceBot
                 return;
 
             this.Players.Remove(player);
+
+            do
+            {
+                XPlayer p = Players.FirstOrDefault(x => Players.Count(y => y.TelegramUserId == x.TelegramUserId) > 1);
+                if (p == null) break;
+                Players.Remove(p);
+            }
+            while (true);
+
             Send(GetTranslation("FledGame", user.GetName()) + Environment.NewLine + GetTranslation("JoinInfo", Players.Count, 3, 8));
         }
 
