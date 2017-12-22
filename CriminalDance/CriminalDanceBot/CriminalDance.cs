@@ -789,7 +789,19 @@ namespace CriminalDanceBot
             }
             if (!newGame)
                 _secondsToAdd += 15;
-            Bot.Send(ChatId, GetTranslation("JoinedGame", GetName(u)));
+            Send(GetTranslation("JoinedGame", GetName(u)) + Environment.NewLine + GetTranslation("JoinInfo", Players.Count, 3, 8));
+        }
+
+        private void RemovePlayer(User user)
+        {
+            if (this.Phase != GamePhase.Joining) return;
+
+            var player = this.Players.FirstOrDefault(x => x.TelegramUserId == user.Id);
+            if (player == null)
+                return;
+
+            this.Players.Remove(player);
+            Send(GetTranslation("FledGame", user.GetName()) + Environment.NewLine + GetTranslation("JoinInfo", Players.Count, 3, 8));
         }
 
         public void PrepareGame(int NumOfPlayers)
@@ -844,12 +856,20 @@ namespace CriminalDanceBot
                 if (Phase == GamePhase.Joining)
                     AddPlayer(msg.From);
             }
-            if (msg.Text.ToLower().StartsWith("/startgame"))
+            else if (msg.Text.ToLower().StartsWith("/flee"))
+            {
+                if (Phase == GamePhase.Joining)
+                    RemovePlayer(msg.From);
+
+                else if (Phase == GamePhase.InGame)
+                    Send(GetTranslation("CantFleeRunningGame"));
+            }
+            else if (msg.Text.ToLower().StartsWith("/startgame"))
             {
                 if (Phase == GamePhase.Joining)
                     AddPlayer(msg.From);
             }
-            if (msg.Text.ToLower().StartsWith("/forcestart"))
+            else if (msg.Text.ToLower().StartsWith("/forcestart"))
             {
                 if (this.Players.Count() >= 3) Phase = GamePhase.InGame;
                 else
@@ -859,13 +879,13 @@ namespace CriminalDanceBot
                     Bot.Gm.RemoveGame(this);
                 }
             }
-            if (msg.Text.ToLower().StartsWith("/killgame"))
+            else if (msg.Text.ToLower().StartsWith("/killgame"))
             {
                 Send(GetTranslation("KillGame"));
                 Phase = GamePhase.Ending;
                 Bot.Gm.RemoveGame(this);
             }
-            if (msg.Text.ToLower().StartsWith("/seq"))
+            else if (msg.Text.ToLower().StartsWith("/seq"))
             {
                 if (_playerList == 0)
                     Reply(msg.MessageId, GetTranslation("PlayerSequenceNotStarted"));
