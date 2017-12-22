@@ -27,9 +27,6 @@ namespace CriminalDanceBot
             Bot.Api = new TelegramBotClient(Constants.GetBotToken("BotToken"));
             Bot.Me = Bot.Api.GetMeAsync().Result;
 
-            Langs = new Dictionary<string, XDocument>();
-            English = XDocument.Load(Path.Combine(Constants.GetLangDirectory(), "English.xml"));
-
             Bot.Gm = new GameManager();
 
             Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
@@ -49,19 +46,10 @@ namespace CriminalDanceBot
                 }
             }
 
-            var files = Directory.GetFiles(Constants.GetLangDirectory());
-            try
-            {
-                foreach (var file in files)
-                {
-                    var lang = Path.GetFileNameWithoutExtension(file);
-                    XDocument doc = XDocument.Load(file);
-                    Langs.Add(lang, doc);
-                }
-            }
-            catch { }
+            English = Helper.ReadEnglish();
+            Langs = Helper.ReadLanguageFiles();
 
-            Bot.Api.GetUpdatesAsync(-1);
+            Bot.Api.GetUpdatesAsync(-1).Wait();
             Handler.HandleUpdates(Bot.Api);
             Bot.Api.StartReceiving();
             new Thread(UpdateConsole).Start();

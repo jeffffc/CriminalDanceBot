@@ -106,5 +106,13 @@ namespace CriminalDanceBot
 
             Bot.Send(msg.Chat.Id, GetTranslation("GetWhichLang", GetLanguage(msg.Chat.Id)), Handler.GetGetLangMenu());
         }
+
+        [Command(Trigger = "reloadlangs", DevOnly = true)]
+        public static void ReloadLang(Message msg, string[] args)
+        {
+            Program.English = Helper.ReadEnglish();
+            Program.Langs = Helper.ReadLanguageFiles();
+            msg.Reply("Done.");
+        }
     }
 }

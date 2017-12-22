@@ -7,6 +7,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -159,6 +160,28 @@ namespace CriminalDanceBot
                 UserName = chat.Username,
                 GroupLink = chat.Username == "" ? $"https://telegram.me/{chat.Username}" : null
             };
+        }
+
+        public static Dictionary<string, XDocument> ReadLanguageFiles()
+        {
+            var files = Directory.GetFiles(Constants.GetLangDirectory());
+            var langs = new Dictionary<string, XDocument>();
+            try
+            {
+                foreach (var file in files)
+                {
+                    var lang = Path.GetFileNameWithoutExtension(file);
+                    XDocument doc = XDocument.Load(file);
+                    langs.Add(lang, doc);
+                }
+            }
+            catch { }
+            return langs;
+        }
+
+        public static XDocument ReadEnglish()
+        {
+            return XDocument.Load(Path.Combine(Constants.GetLangDirectory(), "English.xml"));
         }
     }
 }
