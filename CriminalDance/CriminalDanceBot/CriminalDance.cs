@@ -179,7 +179,7 @@ namespace CriminalDanceBot
                 }
                 this.Phase = GamePhase.Ending;
             }
-            
+
             Bot.Gm.RemoveGame(this);
             Bot.Send(ChatId, GetTranslation("GameEnded"));
         }
@@ -387,7 +387,7 @@ namespace CriminalDanceBot
                     }
                 }
                 catch
-                { 
+                {
                     //
                 }
                 foreach (var player in BarterPlayers)
@@ -459,14 +459,7 @@ namespace CriminalDanceBot
                     Bot.Api.DeleteMessageAsync(p.TelegramUserId, toBeDeleted.MessageId);
                     });
                 */
-                var menu = new InlineKeyboardMarkup(
-                    new InlineKeyboardButton[]
-                    {
-                        new InlineKeyboardCallbackButton(GetTranslation("WitnessWatchButton"), $"{Id}|{p.TelegramUserId}|w|{p2.TelegramUserId}"),
-                    }
-                );
 
-                Bot.Send(p.TelegramUserId, GetTranslation("WitnessWatchMessage", p2.GetName()), menu);
                 Send(GetTranslation("WitnessWatched", GetName(p), GetName(p2)));
                 NowAction = GameAction.Next;
             }
@@ -815,7 +808,7 @@ namespace CriminalDanceBot
                         ret = SendPM(p, GetTranslation("YouJoined", GroupName));
                     }
                     catch
-                    { 
+                    {
                         Bot.Send(ChatId, GetTranslation("NotStartedBot", GetName(u)), GenerateStartMe());
                         return;
                     }
@@ -863,7 +856,7 @@ namespace CriminalDanceBot
             var tempPlayerList = Players.Shuffle();
             PlayerQueue = new Queue<XPlayer>(tempPlayerList);
             Cards = new XCardDeck(NumOfPlayers);
-            for (int i = 0; i < NumOfPlayers; i++ )
+            for (int i = 0; i < NumOfPlayers; i++)
                 Players[i].Cards.AddRange(Cards.Cards.Where((x, y) => y % NumOfPlayers == i));
             foreach (XPlayer p in Players)
             {
@@ -957,20 +950,8 @@ namespace CriminalDanceBot
             XPlayer p = Players.FirstOrDefault(x => x.TelegramUserId == Int32.Parse(args[1]));
             if (p != null)
             {
-                if (args[2] == "w")
-                {
-                    XPlayer p2 = Players.FirstOrDefault(x => x.TelegramUserId == Int32.Parse(args[3]));
-                    if (p2 != null)
-                    {
-                        BotMethods.AnswerCallback(query, GenerateOwnCard(p2, true), true);
-                        Bot.Edit(query.From.Id, query.Message.MessageId, GetTranslation("ReceivedButton"));
-                    }
-                    return;
-                }
-
 
                 GameAction actionType = (GameAction)Int32.Parse(args[2]);
-                Bot.Edit(p.TelegramUserId, p.CurrentQuestion.MessageId, GetTranslation("ReceivedButton"));
                 switch (actionType)
                 {
                     case GameAction.NormalCard:
@@ -978,6 +959,12 @@ namespace CriminalDanceBot
                         break;
                     case GameAction.Witness:
                         p.PlayerChoice1 = Int32.Parse(args[3]);
+                        XPlayer p2 = Players.FirstOrDefault(x => x.TelegramUserId == p.PlayerChoice1);
+                        if (p2 != null)
+                        {
+                            var cards = GenerateOwnCard(p2, true);
+                            BotMethods.AnswerCallback(query, cards, true);
+                        }
                         break;
                     case GameAction.Barter:
                         int a;
@@ -1000,6 +987,7 @@ namespace CriminalDanceBot
                             p.CardChoice1 = args[3];
                         break;
                 }
+                Bot.Edit(p.TelegramUserId, p.CurrentQuestion.MessageId, GetTranslation("ReceivedButton"));
             }
         }
 
@@ -1209,7 +1197,7 @@ namespace CriminalDanceBot
                     if (values != null)
                     {
                         var choice = Helper.RandomNum(values.Count());
-                        var selected = values.ElementAt(choice- 1).Value;
+                        var selected = values.ElementAt(choice - 1).Value;
                         // ReSharper disable once AssignNullToNotNullAttribute
                         return String.Format(selected, args).Replace("\\n", Environment.NewLine);
                     }

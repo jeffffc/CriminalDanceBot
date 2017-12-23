@@ -178,7 +178,9 @@ namespace CriminalDanceBot
         {
             try
             {
-                return Bot.Api.AnswerCallbackQueryAsync(query.Id, text, popup).Result;
+                var t = Bot.Api.AnswerCallbackQueryAsync(query.Id, text, popup); 
+                t.Wait();
+                return t.Result;            // Await this call in order to be sure it is sent in time
             }
             catch (Exception e)
             {
