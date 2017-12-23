@@ -246,14 +246,32 @@ namespace CriminalDanceBot
                     // ?
                 }
 
-                if (p.CardChoice1 == null)
+                var cardchoice = p.CardChoice1;
+
+                if (cardchoice == null)
                 {
                     DumpCard(p);
                     NowAction = GameAction.Next;
                     return;
                 }
-                var card = p.Cards.FirstOrDefault(x => x.Id == p.CardChoice1);
+                var card = p.Cards.FirstOrDefault(x => x.Id == cardchoice);
                 p.CurrentQuestion = null;
+
+                if (card == null)
+                {
+                    string m = "<b>Error occured!</b>" + Environment.NewLine;
+                    m += "Card was null after player choice!" + Environment.NewLine;
+                    m += $"Player: {p.GetName()} ({p.TelegramUserId})" + Environment.NewLine;
+                    m += $"Cardchoice: {p.CardChoice1}" + Environment.NewLine;
+                    m += $"Cards in hand: {GenerateOwnCard(p, true)}" + Environment.NewLine;
+                    m += $"NowAction: {NowAction.ToString()}" + Environment.NewLine;
+                    m += $"Group: {GroupName}" + Environment.NewLine;
+                    m += $"Error time: {DateTime.UtcNow.ToLongTimeString()} UTC";
+                    Bot.Send(Constants.LogGroupId, m);
+                    Bot.Send(ChatId, "An error occured! Informed the developers! Trying to keep the game alive...");
+                    NowAction = GameAction.Next;
+                    return;
+                }
 
                 // What card?
                 switch (card.Type)
