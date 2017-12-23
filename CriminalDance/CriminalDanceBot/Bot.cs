@@ -150,10 +150,21 @@ namespace CriminalDanceBot
         {
             try
             {
-                return Bot.Api.EditMessageTextAsync(chatId, oldMessageId, text, parseMode, disableWebPagePreview, replyMarkup).Result;
+                var t = Bot.Api.EditMessageTextAsync(chatId, oldMessageId, text, parseMode, disableWebPagePreview, replyMarkup);
+                t.Wait();
+                return t.Result;
             }
             catch (Exception e)
             {
+                if (e is AggregateException Agg && Agg.InnerExceptions.Any(x => x.Message.ToLower().Contains("message is not modified")))
+                {
+                    var m = "Messae not modified." + Environment.NewLine;
+                    m += $"Chat: {chatId}" + Environment.NewLine;
+                    m += $"Text: {text}" + Environment.NewLine;
+                    m += $"Time: {DateTime.UtcNow.ToLongTimeString()} UTC";
+                    Send(Constants.LogGroupId, m);
+                    return null;
+                }
                 e.LogError();
                 return null;
             }
