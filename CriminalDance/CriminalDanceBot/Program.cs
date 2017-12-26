@@ -24,6 +24,8 @@ namespace CriminalDanceBot
 
         static void Main(string[] args)
         {
+            AppDomain.CurrentDomain.UnhandledException += UnhandledException;
+
             Bot.Api = new TelegramBotClient(Constants.GetBotToken("BotToken"));
             Bot.Me = Bot.Api.GetMeAsync().Result;
 
@@ -55,6 +57,25 @@ namespace CriminalDanceBot
             new Thread(UpdateConsole).Start();
             Console.ReadLine();
             Bot.Api.StopReceiving();
+        }
+
+        private static void UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            Exception exc = (Exception)e.ExceptionObject;
+            string message = Environment.NewLine + Environment.NewLine + exc.Message + Environment.NewLine + Environment.NewLine;
+            string trace = exc.StackTrace;
+
+            do
+            {
+                exc = exc.InnerException;
+                if (exc == null) break;
+                message += exc.Message + Environment.NewLine + Environment.NewLine;
+            }
+            while (true);
+
+            message += trace;
+            Bot.Send(Constants.LogGroupId, "<b>UNHANDELED EXCEPTION! BOT IS PROBABLY CRASHING!</b>" + message.FormatHTML());
+            Thread.Sleep(5000); // Give the message time to be sent
         }
 
         private static void UpdateConsole()
