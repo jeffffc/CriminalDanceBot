@@ -150,12 +150,53 @@ namespace CriminalDanceBot
         {
             try
             {
-                return Bot.Api.EditMessageTextAsync(chatId, oldMessageId, text, parseMode, disableWebPagePreview, replyMarkup).Result;
+                var t = Bot.Api.EditMessageTextAsync(chatId, oldMessageId, text, parseMode, disableWebPagePreview, replyMarkup);
+                t.Wait();
+                return t.Result;
+            }
+            catch (Exception e)
+            {
+                if (e is AggregateException Agg && Agg.InnerExceptions.Any(x => x.Message.ToLower().Contains("message is not modified")))
+                {
+                    var m = "Messae not modified." + Environment.NewLine;
+                    m += $"Chat: {chatId}" + Environment.NewLine;
+                    m += $"Text: {text}" + Environment.NewLine;
+                    m += $"Time: {DateTime.UtcNow.ToLongTimeString()} UTC";
+                    Send(Constants.LogGroupId, m);
+                    return null;
+                }
+                e.LogError();
+                return null;
+            }
+        }
+
+        public static Message SendDocument(long chatId, FileToSend fileToSend, string caption = null, IReplyMarkup replyMarkup = null, bool disableNotification = false)
+        {
+            try
+            {
+                return Bot.Api.SendDocumentAsync(chatId, fileToSend, caption, disableNotification, 0, replyMarkup).Result;
             }
             catch (Exception e)
             {
                 e.LogError();
                 return null;
+            }
+        }
+        #endregion
+
+        #region Callbacks
+        public static bool AnswerCallback(CallbackQuery query, string text = null, bool popup = false)
+        {
+            try
+            {
+                var t = Bot.Api.AnswerCallbackQueryAsync(query.Id, text, popup); 
+                t.Wait();
+                return t.Result;            // Await this call in order to be sure it is sent in time
+            }
+            catch (Exception e)
+            {
+                e.LogError();
+                return false;
             }
         }
         #endregion

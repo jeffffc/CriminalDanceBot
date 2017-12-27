@@ -179,7 +179,7 @@ namespace CriminalDanceBot
                 }
                 this.Phase = GamePhase.Ending;
             }
-            
+
             Bot.Gm.RemoveGame(this);
             Bot.Send(ChatId, GetTranslation("GameEnded"));
         }
@@ -246,14 +246,32 @@ namespace CriminalDanceBot
                     // ?
                 }
 
-                if (p.CardChoice1 == null)
+                var cardchoice = p.CardChoice1;
+
+                if (cardchoice == null)
                 {
                     DumpCard(p);
                     NowAction = GameAction.Next;
                     return;
                 }
-                var card = p.Cards.FirstOrDefault(x => x.Id == p.CardChoice1);
+                var card = p.Cards.FirstOrDefault(x => x.Id == cardchoice);
                 p.CurrentQuestion = null;
+
+                if (card == null)
+                {
+                    string m = "<b>Error occured!</b>" + Environment.NewLine;
+                    m += "Card was null after player choice!" + Environment.NewLine;
+                    m += $"Player: {p.GetName()} ({p.TelegramUserId})" + Environment.NewLine;
+                    m += $"Cardchoice: {p.CardChoice1}" + Environment.NewLine;
+                    m += $"Cards in hand: {GenerateOwnCard(p, true)}" + Environment.NewLine;
+                    m += $"NowAction: {NowAction.ToString()}" + Environment.NewLine;
+                    m += $"Group: {GroupName}" + Environment.NewLine;
+                    m += $"Error time: {DateTime.UtcNow.ToLongTimeString()} UTC";
+                    Bot.Send(Constants.LogGroupId, m);
+                    Bot.Send(ChatId, "An error occured! Informed the developers! Trying to keep the game alive...");
+                    NowAction = GameAction.Next;
+                    return;
+                }
 
                 // What card?
                 switch (card.Type)
@@ -387,7 +405,7 @@ namespace CriminalDanceBot
                     }
                 }
                 catch
-                { 
+                {
                     //
                 }
                 foreach (var player in BarterPlayers)
@@ -452,11 +470,14 @@ namespace CriminalDanceBot
                 {
                     p2 = Players.FirstOrDefault(x => x.TelegramUserId == p.PlayerChoice1);
                 }
+                /*
                 var toBeDeleted = SendPM(p, GenerateOwnCard(p2, true));
                 Task.Factory.StartNew(() => {
                     Thread.Sleep(30000);
                     Bot.Api.DeleteMessageAsync(p.TelegramUserId, toBeDeleted.MessageId);
                     });
+                */
+
                 Send(GetTranslation("WitnessWatched", GetName(p), GetName(p2)));
                 NowAction = GameAction.Next;
             }
@@ -805,7 +826,7 @@ namespace CriminalDanceBot
                         ret = SendPM(p, GetTranslation("YouJoined", GroupName));
                     }
                     catch
-                    { 
+                    {
                         Bot.Send(ChatId, GetTranslation("NotStartedBot", GetName(u)), GenerateStartMe());
                         return;
                     }
@@ -853,7 +874,7 @@ namespace CriminalDanceBot
             var tempPlayerList = Players.Shuffle();
             PlayerQueue = new Queue<XPlayer>(tempPlayerList);
             Cards = new XCardDeck(NumOfPlayers);
-            for (int i = 0; i < NumOfPlayers; i++ )
+            for (int i = 0; i < NumOfPlayers; i++)
                 Players[i].Cards.AddRange(Cards.Cards.Where((x, y) => y % NumOfPlayers == i));
             foreach (XPlayer p in Players)
             {
@@ -947,8 +968,8 @@ namespace CriminalDanceBot
             XPlayer p = Players.FirstOrDefault(x => x.TelegramUserId == Int32.Parse(args[1]));
             if (p != null)
             {
+
                 GameAction actionType = (GameAction)Int32.Parse(args[2]);
-                Bot.Edit(p.TelegramUserId, p.CurrentQuestion.MessageId, GetTranslation("ReceivedButton"));
                 switch (actionType)
                 {
                     case GameAction.NormalCard:
@@ -956,6 +977,12 @@ namespace CriminalDanceBot
                         break;
                     case GameAction.Witness:
                         p.PlayerChoice1 = Int32.Parse(args[3]);
+                        XPlayer p2 = Players.FirstOrDefault(x => x.TelegramUserId == p.PlayerChoice1);
+                        if (p2 != null)
+                        {
+                            var cards = GenerateOwnCard(p2, true);
+                            BotMethods.AnswerCallback(query, cards, true);
+                        }
                         break;
                     case GameAction.Barter:
                         int a;
@@ -978,6 +1005,7 @@ namespace CriminalDanceBot
                             p.CardChoice1 = args[3];
                         break;
                 }
+                Bot.Edit(p.TelegramUserId, p.CurrentQuestion.MessageId, GetTranslation("ReceivedButton"));
             }
         }
 
@@ -1104,7 +1132,7 @@ namespace CriminalDanceBot
         {
             string m = "";
             if (witness)
-                m = GetTranslation("CardsInPlayer", GetName(p));
+                m = GetTranslation("CardsInPlayer", p.Name) + Environment.NewLine;
             else
                 m = GetTranslation("CardsInHand") + Environment.NewLine;
             for (int i = 0; i < p.Cards.Count; i++)
@@ -1187,7 +1215,7 @@ namespace CriminalDanceBot
                     if (values != null)
                     {
                         var choice = Helper.RandomNum(values.Count());
-                        var selected = values.ElementAt(choice- 1).Value;
+                        var selected = values.ElementAt(choice - 1).Value;
                         // ReSharper disable once AssignNullToNotNullAttribute
                         return String.Format(selected, args).Replace("\\n", Environment.NewLine);
                     }
