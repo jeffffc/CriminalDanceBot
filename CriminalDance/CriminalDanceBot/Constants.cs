@@ -22,9 +22,10 @@ namespace CriminalDanceBot
             return Path.GetFullPath(_logPath);
         }
         private static string _languageDirectory = @"C:\CrimDanceLanguages";
-        public static string GetLangDirectory()
+        private static string _languageTempDirectory = Path.Combine(_languageDirectory, @"temp\");
+        public static string GetLangDirectory(bool temp = false)
         {
-            return Path.GetFullPath(_languageDirectory);
+            return (!temp) ? Path.GetFullPath(_languageDirectory) : Path.GetFullPath(_languageTempDirectory);
         }
         public static long LogGroupId = -1001117997439;
         public static int[] Dev = new int[] { 106665913, 295152997 };

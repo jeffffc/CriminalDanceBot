@@ -47,7 +47,6 @@ namespace CriminalDanceBot
                     
                 }
             }
-
             English = Helper.ReadEnglish();
             Langs = Helper.ReadLanguageFiles();
 
