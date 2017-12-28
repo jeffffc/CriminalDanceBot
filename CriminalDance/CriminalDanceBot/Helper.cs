@@ -40,17 +40,17 @@ namespace CriminalDanceBot
 
             */
             string m = "Error occured." + Environment.NewLine + Environment.NewLine;
-            var trace = $"<code>{e.StackTrace}</code>";
+            var trace = e.StackTrace;
             do
             {
-                m += $"<code>{e.Message}</code>" + Environment.NewLine + Environment.NewLine;
+                m += e.Message + Environment.NewLine + Environment.NewLine;
                 e = e.InnerException;
             }
             while (e != null);
 
             m += trace;
 
-            Bot.Send(Constants.LogGroupId, m);
+            Bot.Send(Constants.LogGroupId, m, parseMode: ParseMode.Default);
 #else
             using (var sw = new StreamWriter(Constants.GetLogPath(), true))
             {

@@ -138,8 +138,7 @@ namespace CriminalDanceBot
                     else
                     {
                     }
-                    var notify = new NotifyGame { GroupId = grpId, UserId = msg.From.Id };
-                    db.NotifyGames.Add(notify);
+                    db.Database.ExecuteSqlCommand($"INSERT INTO NotifyGame VALUES ({msg.From.Id}, {msg.Chat.Id})");
                     db.SaveChanges();
                     msg.Reply("You have been successfully added to the waiting list. You will be notified when a game is started in this group.");
                 }

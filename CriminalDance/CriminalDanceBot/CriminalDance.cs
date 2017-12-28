@@ -54,6 +54,8 @@ namespace CriminalDanceBot
 
             Bot.Send(chatId, GetTranslation("NewGame", GetName(u)));
             AddPlayer(u, true);
+            Initiator = Players[0];
+            NotifyNextGamePlayers();
             new Thread(GameTimer).Start();
         }
 
@@ -115,6 +117,10 @@ namespace CriminalDanceBot
 
                     Bot.Send(ChatId, GetTranslation("GameStart"));
                     PrepareGame(Players.Count());
+
+                    // remove joined players from nextgame list
+                    // RemoveFromNextGame(Players.Select(x => x.TelegramUserId).ToList());
+
 #if DEBUG
                     string allCards = "";
                     foreach (XPlayer p in Players)
@@ -1141,6 +1147,40 @@ namespace CriminalDanceBot
             }
             return m;
         }
+
+        public void NotifyNextGamePlayers()
+        {
+            var grpId = ChatId;
+            using (var db = new CrimDanceDb())
+            {
+                var dbGrp = db.Groups.FirstOrDefault(x => x.GroupId == grpId);
+                if (dbGrp != null)
+                {
+                    var toNotify = db.NotifyGames.Where(x => x.GroupId == grpId && x.UserId != Initiator.TelegramUserId).Select(x => x.UserId).ToList();
+                    foreach (int user in toNotify)
+                    {
+                        Bot.Send(user, GetTranslation("GameIsStarting", GroupName));
+                    }
+                    var toDelete = db.NotifyGames.Where(x => x.GroupId == grpId && Players.Select(y => y.TelegramUserId).ToList().Contains(x.UserId));
+                    db.NotifyGames.RemoveRange(toDelete);
+                }
+            }
+        }
+
+        /*
+        public void RemoveFromNextGame(List<int> players)
+        {
+            using (var db = new CrimDanceDb())
+            {
+                var grpId = ChatId;
+                var dbGrp = db.Groups.FirstOrDefault(x => x.GroupId == grpId);
+                if (dbGrp != null)
+                {
+                    
+                }
+            }
+        }
+        */
 
         public void Dispose()
         {
