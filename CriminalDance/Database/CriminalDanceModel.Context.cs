@@ -30,5 +30,6 @@ namespace Database
         public virtual DbSet<GamePlayer> GamePlayers { get; set; }
         public virtual DbSet<Player> Players { get; set; }
         public virtual DbSet<Group> Groups { get; set; }
+        public virtual DbSet<NotifyGame> NotifyGames { get; set; }
     }
 }

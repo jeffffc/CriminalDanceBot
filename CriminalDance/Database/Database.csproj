@@ -76,6 +76,9 @@
     <Compile Include="Group.cs">
       <DependentUpon>CriminalDanceModel.tt</DependentUpon>
     </Compile>
+    <Compile Include="NotifyGame.cs">
+      <DependentUpon>CriminalDanceModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="Player.cs">
       <DependentUpon>CriminalDanceModel.tt</DependentUpon>
     </Compile>

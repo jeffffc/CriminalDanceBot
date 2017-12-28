@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Command = CriminalDanceBot.Attributes.Command;
 using Telegram.Bot.Types;
 using Database;
+using Telegram.Bot.Types.Enums;
 
 namespace CriminalDanceBot
 {
@@ -116,6 +117,33 @@ namespace CriminalDanceBot
                 Bot.Gm.HandleMessage(msg);
             }
         }
-        
+
+        [Command(Trigger = "nextgame")]
+        public static void NextGame(Message msg, string[] args)
+        {
+            if (msg.Chat.Type == ChatType.Private)
+                return;
+            var grpId = msg.Chat.Id;
+            using (var db = new CrimDanceDb())
+            {
+                var dbGrp = db.Groups.FirstOrDefault(x => x.GroupId == grpId);
+                if (dbGrp != null)
+                {
+                    var notified = db.NotifyGames.FirstOrDefault(x => x.GroupId == grpId && x.UserId == msg.From.Id);
+                    if (notified != null)
+                    {
+                        msg.Reply("You are already in the waiting list for this group.");
+                        return;
+                    }
+                    else
+                    {
+                    }
+                    var notify = new NotifyGame { GroupId = grpId, UserId = msg.From.Id };
+                    db.NotifyGames.Add(notify);
+                    db.SaveChanges();
+                    msg.Reply("You have been successfully added to the waiting list. You will be notified when a game is started in this group.");
+                }
+            }
+        }
     }
 }

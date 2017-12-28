@@ -60,6 +60,16 @@ warning 6002: The table/view 'criminaldance.dbo.GroupAdmin' does not have a prim
           <Property Name="GroupId" Type="int" Nullable="false" />
           <Property Name="PlayerId" Type="int" Nullable="false" />
         </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'criminaldance.dbo.NotifyGame' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="NotifyGame">
+          <Key>
+            <PropertyRef Name="UserId" />
+            <PropertyRef Name="GroupId" />
+          </Key>
+          <Property Name="UserId" Type="int" Nullable="false" />
+          <Property Name="GroupId" Type="bigint" Nullable="false" />
+        </EntityType>
         <EntityType Name="Player">
           <Key>
             <PropertyRef Name="Id" />
@@ -143,6 +153,12 @@ warning 6002: The table/view 'criminaldance.dbo.GroupAdmin' does not have a prim
     [GroupAdmin].[GroupId] AS [GroupId], 
     [GroupAdmin].[PlayerId] AS [PlayerId]
     FROM [dbo].[GroupAdmin] AS [GroupAdmin]</DefiningQuery>
+          </EntitySet>
+          <EntitySet Name="NotifyGame" EntityType="Self.NotifyGame" store:Type="Tables" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [NotifyGame].[UserId] AS [UserId], 
+    [NotifyGame].[GroupId] AS [GroupId]
+    FROM [dbo].[NotifyGame] AS [NotifyGame]</DefiningQuery>
           </EntitySet>
           <AssociationSet Name="FK_Game_Group" Association="Self.FK_Game_Group">
             <End Role="Group" EntitySet="Group" />
@@ -253,6 +269,7 @@ warning 6002: The table/view 'criminaldance.dbo.GroupAdmin' does not have a prim
             <End Role="Group" EntitySet="Groups" />
             <End Role="Player" EntitySet="Players" />
           </AssociationSet>
+          <EntitySet Name="NotifyGames" EntityType="CriminalDanceModel.NotifyGame" />
         </EntityContainer>
         <EntityType Name="Group">
           <Key>
@@ -287,6 +304,14 @@ warning 6002: The table/view 'criminaldance.dbo.GroupAdmin' does not have a prim
           <End Type="CriminalDanceModel.Group" Role="Group" Multiplicity="*" />
           <End Type="CriminalDanceModel.Player" Role="Player" Multiplicity="*" />
         </Association>
+        <EntityType Name="NotifyGame">
+          <Key>
+            <PropertyRef Name="UserId" />
+            <PropertyRef Name="GroupId" />
+          </Key>
+          <Property Name="UserId" Type="Int32" Nullable="false" />
+          <Property Name="GroupId" Type="Int64" Nullable="false" />
+        </EntityType>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -375,6 +400,14 @@ warning 6002: The table/view 'criminaldance.dbo.GroupAdmin' does not have a prim
               <ScalarProperty Name="Id" ColumnName="GroupId" />
             </EndProperty>
           </AssociationSetMapping>
+          <EntitySetMapping Name="NotifyGames">
+            <EntityTypeMapping TypeName="CriminalDanceModel.NotifyGame">
+              <MappingFragment StoreEntitySet="NotifyGame">
+                <ScalarProperty Name="GroupId" ColumnName="GroupId" />
+                <ScalarProperty Name="UserId" ColumnName="UserId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
         </EntityContainerMapping>
       </Mapping>
     </edmx:Mappings>

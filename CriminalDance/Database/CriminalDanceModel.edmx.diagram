@@ -13,6 +13,7 @@
         <EntityTypeShape EntityType="CriminalDanceModel.Group" Width="1.5" PointX="0.75" PointY="3.875" />
         <AssociationConnector Association="CriminalDanceModel.FK_Game_Group" />
         <AssociationConnector Association="CriminalDanceModel.GroupAdmin" />
+        <EntityTypeShape EntityType="CriminalDanceModel.NotifyGame" Width="1.5" PointX="5.375" PointY="2.75" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>
