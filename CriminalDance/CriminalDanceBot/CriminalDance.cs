@@ -1166,6 +1166,7 @@ namespace CriminalDanceBot
                     }
                     var toDelete = db.NotifyGames.Where(x => x.GroupId == grpId);
                     db.NotifyGames.RemoveRange(toDelete);
+                    db.SaveChanges();
                 }
             }
         }

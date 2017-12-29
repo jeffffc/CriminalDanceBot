@@ -140,7 +140,7 @@ namespace CriminalDanceBot
                     }
                     db.Database.ExecuteSqlCommand($"INSERT INTO NotifyGame VALUES ({msg.From.Id}, {msg.Chat.Id})");
                     db.SaveChanges();
-                    msg.Reply(GetTranslation("NextGame", GetLanguage(msg.From.Id), msg.Chat.Title));
+                    msg.Reply(GetTranslation("NextGame", GetLanguage(msg.From.Id)));
                 }
             }
         }
