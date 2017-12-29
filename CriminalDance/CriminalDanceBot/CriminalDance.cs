@@ -1164,8 +1164,7 @@ namespace CriminalDanceBot
                     {
                         Bot.Send(user, GetTranslation("GameIsStarting", GroupName));
                     }
-                    var toDelete = db.NotifyGames.Where(x => x.GroupId == grpId);
-                    db.NotifyGames.RemoveRange(toDelete);
+                    db.Database.ExecuteSqlCommand($"DELETE FROM NotifyGame WHERE GROUPID = {grpId}");
                     db.SaveChanges();
                 }
             }
