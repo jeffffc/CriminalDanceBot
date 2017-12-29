@@ -922,46 +922,49 @@ namespace CriminalDanceBot
         #region Helpers
         public void HandleMessage(Message msg)
         {
-            if (msg.Text.ToLower().StartsWith("/join"))
+            switch (msg.Text.ToLower().Substring(1).Split()[0].Split('@')[0])
             {
-                if (Phase == GamePhase.Joining)
-                    AddPlayer(msg.From);
-            }
-            else if (msg.Text.ToLower().StartsWith("/flee"))
-            {
-                if (Phase == GamePhase.Joining)
-                    RemovePlayer(msg.From);
-
-                else if (Phase == GamePhase.InGame)
-                    Send(GetTranslation("CantFleeRunningGame"));
-            }
-            else if (msg.Text.ToLower().StartsWith("/startgame"))
-            {
-                if (Phase == GamePhase.Joining)
-                    AddPlayer(msg.From);
-            }
-            else if (msg.Text.ToLower().StartsWith("/forcestart"))
-            {
-                if (this.Players.Count() >= 3) Phase = GamePhase.InGame;
-                else
-                {
-                    Send(GetTranslation("GameEnded"));
+                case "join":
+                    if (Phase == GamePhase.Joining)
+                        AddPlayer(msg.From);
+                    break;
+                case "flee":
+                    if (Phase == GamePhase.Joining)
+                        RemovePlayer(msg.From);
+                    else if (Phase == GamePhase.InGame)
+                        Send(GetTranslation("CantFleeRunningGame"));
+                    break;
+                case "startgame":
+                    if (Phase == GamePhase.Joining)
+                        AddPlayer(msg.From);
+                    break;
+                case "forcestart":
+                    if (this.Players.Count() >= 3) Phase = GamePhase.InGame;
+                    else
+                    {
+                        Send(GetTranslation("GameEnded"));
+                        Phase = GamePhase.Ending;
+                        Bot.Gm.RemoveGame(this);
+                    }
+                    break;
+                case "killgame":
+                    Send(GetTranslation("KillGame"));
                     Phase = GamePhase.Ending;
                     Bot.Gm.RemoveGame(this);
-                }
-            }
-            else if (msg.Text.ToLower().StartsWith("/killgame"))
-            {
-                Send(GetTranslation("KillGame"));
-                Phase = GamePhase.Ending;
-                Bot.Gm.RemoveGame(this);
-            }
-            else if (msg.Text.ToLower().StartsWith("/seq"))
-            {
-                if (_playerList == 0)
-                    Reply(msg.MessageId, GetTranslation("PlayerSequenceNotStarted"));
-                else
-                    Reply(_playerList, GetTranslation("GetPlayerSequence"));
+                    break;
+                case "seq":
+                    if (_playerList == 0)
+                        Reply(msg.MessageId, GetTranslation("PlayerSequenceNotStarted"));
+                    else
+                        Reply(_playerList, GetTranslation("GetPlayerSequence"));
+                    break;
+                case "extend":
+                    if (Phase == GamePhase.Joining)
+                    {
+                        _secondsToAdd += Constants.ExtendTime;
+                        Reply(msg.MessageId, GetTranslation("ExtendJoining", Constants.ExtendTime));
+                    }
+                    break;
             }
         }
 

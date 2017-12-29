@@ -144,5 +144,19 @@ namespace CriminalDanceBot
                 }
             }
         }
+
+        [Command(Trigger = "extend")]
+        public static void ExtendTimer(Message msg, string[] args)
+        {
+            CriminalDance game = Bot.Gm.GetGameByChatId(msg.Chat.Id);
+            if (game == null)
+            {
+                return;
+            }
+            else
+            {
+                Bot.Gm.HandleMessage(msg);
+            }
+        }
     }
 }

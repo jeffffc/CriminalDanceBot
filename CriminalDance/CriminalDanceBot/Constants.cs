@@ -38,6 +38,7 @@ namespace CriminalDanceBot
 #else
         public static int ChooseCardTime = 45;
 #endif
+        public static int ExtendTime = 30;
 
         #endregion
     }
