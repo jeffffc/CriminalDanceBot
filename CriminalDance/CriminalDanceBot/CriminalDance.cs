@@ -75,11 +75,11 @@ namespace CriminalDanceBot
                     if (_secondsToAdd != 0)
                     {
                         i = Math.Max(i - _secondsToAdd, Constants.JoinTime - Constants.JoinTimeMax);
-                        Bot.Send(ChatId, GetTranslation("JoinTimeLeft", TimeSpan.FromSeconds(Constants.JoinTime - i).ToString(@"mm\:ss")));
+                        // Bot.Send(ChatId, GetTranslation("JoinTimeLeft", TimeSpan.FromSeconds(Constants.JoinTime - i).ToString(@"mm\:ss")));
                         _secondsToAdd = 0;
                     }
                     var specialTime = JoinTime - i;
-                    if (new int[] { 10, 30, 60 }.Contains(specialTime))
+                    if (new int[] { 10, 30, 60, 90 }.Contains(specialTime))
                     {
                         Bot.Send(ChatId, GetTranslation("JoinTimeSpecialSeconds", specialTime));
                     }
