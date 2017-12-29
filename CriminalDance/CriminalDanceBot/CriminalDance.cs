@@ -55,7 +55,7 @@ namespace CriminalDanceBot
             Bot.Send(chatId, GetTranslation("NewGame", GetName(u)));
             AddPlayer(u, true);
             Initiator = Players[0];
-            NotifyNextGamePlayers();
+            new Task(() => { NotifyNextGamePlayers(); }).Start();
             new Thread(GameTimer).Start();
         }
 
@@ -1161,7 +1161,7 @@ namespace CriminalDanceBot
                     {
                         Bot.Send(user, GetTranslation("GameIsStarting", GroupName));
                     }
-                    var toDelete = db.NotifyGames.Where(x => x.GroupId == grpId && Players.Select(y => y.TelegramUserId).ToList().Contains(x.UserId));
+                    var toDelete = db.NotifyGames.Where(x => x.GroupId == grpId);
                     db.NotifyGames.RemoveRange(toDelete);
                 }
             }
