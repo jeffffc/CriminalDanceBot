@@ -985,13 +985,14 @@ namespace CriminalDanceBot
                         p.CardChoice1 = args[3];
                         break;
                     case GameAction.Witness:
-                        p.PlayerChoice1 = Int32.Parse(args[3]);
-                        XPlayer p2 = Players.FirstOrDefault(x => x.TelegramUserId == p.PlayerChoice1);
+                        var playerChoice1 = Int32.Parse(args[3]);
+                        XPlayer p2 = Players.FirstOrDefault(x => x.TelegramUserId == playerChoice1);
                         if (p2 != null)
                         {
                             var cards = GenerateOwnCard(p2, true);
                             BotMethods.AnswerCallback(query, cards, true);
                         }
+                        p.PlayerChoice1 = playerChoice1;
                         break;
                     case GameAction.Barter:
                         int a;
