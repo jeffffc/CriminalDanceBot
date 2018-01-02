@@ -140,8 +140,8 @@ namespace CriminalDanceBot
                             GroupName = GroupName,
                             TimeStarted = DateTime.UtcNow
                         };
-                        db.Games.Add(DbGame);
-                        db.SaveChanges();
+                        // db.Games.Add(DbGame); // db not ready yet
+                        // db.SaveChanges(); // db not ready yet
                         foreach (var p in Players)
                         {
                             GamePlayer DbGamePlayer = new GamePlayer
@@ -149,9 +149,9 @@ namespace CriminalDanceBot
                                 PlayerId = db.Players.FirstOrDefault(x => x.TelegramId == p.TelegramUserId).Id,
                                 GameId = DbGame.Id
                             };
-                            db.GamePlayers.Add(DbGamePlayer);
+                            // db.GamePlayers.Add(DbGamePlayer); // db not ready yet
                         }
-                        db.SaveChanges();
+                        // db.SaveChanges(); // db not ready yet
                     }
 
                     PrepareGame(Players.Count());
