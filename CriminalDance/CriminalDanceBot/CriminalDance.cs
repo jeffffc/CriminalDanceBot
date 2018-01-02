@@ -71,7 +71,18 @@ namespace CriminalDanceBot
                         break;
                     if (this.Phase == GamePhase.Ending)
                         return;
-
+                    //try to remove duplicated game
+                    if (i == 10)
+                    {
+                        var count = Bot.Gm.Games.Count(x => x.ChatId == ChatId);
+                        if (count > 1)
+                        {
+                            var toDel = Bot.Gm.Games.FirstOrDefault(x => x.Id != this.Id);
+                            Bot.Send(toDel.ChatId, GetTranslation("DuplicatedGameRemoving"));
+                            toDel.Phase = GamePhase.Ending;
+                            Bot.Gm.RemoveGame(toDel);
+                        }
+                    }
                     if (_secondsToAdd != 0)
                     {
                         i = Math.Max(i - _secondsToAdd, Constants.JoinTime - Constants.JoinTimeMax);
