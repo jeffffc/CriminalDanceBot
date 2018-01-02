@@ -162,6 +162,17 @@ namespace CriminalDanceBot
             };
         }
 
+        public static Player MakeDefaultPlayer(User user)
+        {
+            return new Player
+            {
+                Name = user.FirstName,
+                TelegramId = user.Id,
+                UserName = user.Username,
+                Language = "English"
+            };
+        }
+
         public static Dictionary<string, XDocument> ReadLanguageFiles()
         {
             var files = Directory.GetFiles(Constants.GetLangDirectory());

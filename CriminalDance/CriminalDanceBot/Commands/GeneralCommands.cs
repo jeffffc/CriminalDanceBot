@@ -92,6 +92,30 @@ namespace CriminalDanceBot
             Bot.Send(msg.From.Id, GetTranslation("WhatToDo", GetLanguage(msg.From.Id)), replyMarkup: menu);
         }
 
+        [Command(Trigger = "setlang")]
+        public static void SetLang(Message msg, string[] args)
+        {
+            var id = msg.From.Id;
+
+            //make sure the user is in the database
+            using (var db = new CrimDanceDb())
+            {
+                var user = db.Players.FirstOrDefault(x => x.TelegramId == id);
+                if (user == null)
+                {
+                    user = Helper.MakeDefaultPlayer(msg.From);
+                    db.Players.Add(user);
+                }
+
+                user.UserName = msg.From.Username;
+                user.Name = msg.From.FirstName;
+                db.SaveChanges();
+            }
+
+            var menu = Handler.GetConfigLangMenu(msg.From.Id, true);
+            Bot.Send(msg.From.Id, GetTranslation("ChoosePMLanguage", GetLanguage(msg.From.Id)), replyMarkup: menu);
+        }
+
         [Command(Trigger = "maintenance", DevOnly = true)]
         public static void Maintenance(Message msg, string[] args)
         {

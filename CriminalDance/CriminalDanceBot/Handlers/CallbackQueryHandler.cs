@@ -56,7 +56,22 @@ namespace CriminalDanceBot.Handlers
                         {
                             Bot.Edit(query.Message.Chat.Id, query.Message.MessageId, GetTranslation("ConfigDone", GetLanguage(query.From.Id)));
                         }
+                        else if (args[1] == "back")
+                        {
+                            Bot.Edit(query.Message.Chat.Id, query.Message.MessageId, GetTranslation("WhatToDo", GetLanguage(query.From.Id)), GetConfigMenu(long.Parse(args[2])));
+                        }
                         return;
+                    case "setlang":
+                        if (args.Length > 3)
+                        {
+                            var chatId = int.Parse(args[2]);
+                            var chosenLang = args[3];
+                            SetLanguage(chatId, chosenLang);
+                            var toSend = GetTranslation("ReceivedButton", GetLanguage(query.From.Id));
+                            Bot.Edit(query.Message.Chat.Id, query.Message.MessageId, toSend);
+                            return;
+                        }
+                        break;
                     case "getlang":
                         if (args[1] == "get")
                         {
@@ -129,12 +144,12 @@ namespace CriminalDanceBot.Handlers
             return menu;
         }
 
-        internal static InlineKeyboardMarkup GetConfigLangMenu(long id)
+        internal static InlineKeyboardMarkup GetConfigLangMenu(long id, bool setlang = false)
         {
             List<InlineKeyboardButton> buttons = new List<InlineKeyboardButton>();
             //base menu
             foreach (string lang in Program.Langs.Keys)
-                buttons.Add(new InlineKeyboardCallbackButton(lang, $"config|lang|{id}|{lang}"));
+                buttons.Add(new InlineKeyboardCallbackButton(lang, !setlang ? $"config|lang|{id}|{lang}" : $"setlang|lang|{id}|{lang}"));
             var twoMenu = new List<InlineKeyboardButton[]>();
             for (var i = 0; i < buttons.Count; i++)
             {
@@ -146,7 +161,8 @@ namespace CriminalDanceBot.Handlers
                     twoMenu.Add(new[] { buttons[i], buttons[i + 1] });
                 i++;
             }
-            twoMenu.Add(new[] { new InlineKeyboardCallbackButton("Back", $"config|back") });
+            if (!setlang)
+                twoMenu.Add(new[] { new InlineKeyboardCallbackButton("Back", $"config|back|{id}") });
 
             var menu = new InlineKeyboardMarkup(twoMenu.ToArray());
             return menu;

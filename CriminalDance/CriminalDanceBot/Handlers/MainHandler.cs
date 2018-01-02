@@ -121,5 +121,17 @@ namespace CriminalDanceBot.Handlers
                 db.SaveChanges();
             }
         }
+
+        public static void SetLanguage(int userId, string lang)
+        {
+            using (var db = new CrimDanceDb())
+            {
+                var user = db.Players.FirstOrDefault(x => x.TelegramId == userId);
+                if (user == null)
+                    return;
+                user.Language = lang;
+                db.SaveChanges();
+            }
+        }
     }
 }
