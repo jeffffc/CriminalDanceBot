@@ -67,6 +67,9 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>CriminalDanceModel.edmx</DependentUpon>
     </Compile>
+    <Compile Include="Donation.cs">
+      <DependentUpon>CriminalDanceModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="Game.cs">
       <DependentUpon>CriminalDanceModel.tt</DependentUpon>
     </Compile>

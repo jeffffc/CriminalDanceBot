@@ -41,5 +41,9 @@ namespace CriminalDanceBot
         public static int ExtendTime = 30;
 
         #endregion
+
+        public static string DonationLiveToken = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey("SOFTWARE\\CriminalDanceBot").GetValue("DonationLiveToken").ToString();
+        public static string DonationPayload = "CRIMINALDANCEBOTPAYLOAD:";
+
     }
 }

@@ -8,6 +8,7 @@ using Telegram.Bot.Types;
 using Database;
 using CriminalDanceBot.Handlers;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.Payments;
 
 namespace CriminalDanceBot
 {
@@ -160,6 +161,56 @@ namespace CriminalDanceBot
             {
                 Bot.Send(msg.Chat.Id, e.Message, parseMode: ParseMode.Default);
             }
+        }
+
+        [Command(Trigger = "donate")]
+        public static void Donate(Message msg, string[] args)
+        {
+            if (msg.Chat.Type != ChatType.Private)
+            {
+                msg.Reply(GetTranslation("DonatePrivateOnly", GetLanguage(msg.From.Id)));
+                return;
+            }
+            var argList = msg.Text.Split(' ');
+            int money = 0;
+            if (argList.Count() <= 1)
+            {
+                msg.Reply(GetTranslation("DonateInputValue", GetLanguage(msg.From.Id)));
+                return;
+            }
+            else
+            { 
+                if (!int.TryParse(argList[1], out money))
+                {
+                    msg.Reply(GetTranslation("DonateInputValue", GetLanguage(msg.From.Id)));
+                    return;
+                }
+                else
+                {
+                    if (money < 10 || money > 100000)
+                    {
+                        msg.Reply(GetTranslation("DonateWrongValue", GetLanguage(msg.From.Id)));
+                        return;
+                    }
+                    else
+                    {
+                        var providerToken = Constants.DonationLiveToken;
+                        var title = GetTranslation("DonateTitle", GetLanguage(msg.From.Id));
+                        var description = GetTranslation("DonateDescription", GetLanguage(msg.From.Id), money);
+                        var payload = Constants.DonationPayload + msg.From.Id.ToString();
+                        var startParameter = "donate";
+                        var currency = "HKD";
+                        var prices = new LabeledPrice[1] {
+                            new LabeledPrice {
+                                Label = GetTranslation("Donation", GetLanguage(msg.From.Id)),
+                                Amount = money * 100
+                            } };
+                        Bot.Api.SendInvoiceAsync(msg.From.Id, title, description, payload, providerToken,
+                            startParameter, currency, prices);
+                    }
+                }
+            }
+
         }
     }
 }

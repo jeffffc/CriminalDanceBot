@@ -80,6 +80,26 @@ namespace CriminalDanceBot.Handlers
                 case MessageType.ServiceMessage:
                     //
                     break;
+                case MessageType.SuccessfulPayment:
+                    var randomRef = Guid.NewGuid().ToString();
+                    randomRef = $"#crim_{randomRef.Substring(randomRef.Length - 12)}";
+                    using (var db = new CrimDanceDb())
+                    {
+                        var donate = new Donation
+                        {
+                            TelegramId = msg.From.Id,
+                            Amount = msg.SuccessfulPayment.TotalAmount / 100,
+                            Reference = randomRef,
+                            DonationTime = DateTime.UtcNow
+                        };
+                        db.Donations.Add(donate);
+                        db.SaveChanges();
+                    }
+                    // notify user successful donation, provide reference code for checking in case
+                    msg.Reply(GetTranslation("DonateSuccessful", GetLanguage(msg.From.Id), randomRef));
+                    // log who, how much, when and ref code to log group
+                    Bot.Send(Constants.LogGroupId, $"Donation from user <a href='tg://user?id={msg.From.Id}'>{msg.From.FirstName.FormatHTML()}</a>.\nAmount: {msg.SuccessfulPayment.TotalAmount / 100} HKD\nReference: {randomRef}");
+                    break;
             }
         }
 

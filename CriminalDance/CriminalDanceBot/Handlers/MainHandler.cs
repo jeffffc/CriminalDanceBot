@@ -19,7 +19,22 @@ namespace CriminalDanceBot.Handlers
             Bot.OnMessageEdited += BotOnMessageReceived;
             Bot.OnInlineQuery += BotOnInlineQueryReceived;
             Bot.OnInlineResultChosen += BotOnChosenInlineResultReceived;
+            Bot.OnUpdate += BotOnUpdateReceived;
             Bot.OnReceiveError += BotOnReceiveError;
+        }
+
+
+        private static void BotOnUpdateReceived(object sender, UpdateEventArgs updateEventArgs)
+        {
+            // answer precheckout for donation
+            if (updateEventArgs.Update.PreCheckoutQuery != null)
+            {
+                var pcq = updateEventArgs.Update.PreCheckoutQuery;
+                if (pcq.InvoicePayload != (Constants.DonationPayload + pcq.From.Id.ToString()))
+                    Bot.Api.AnswerPreCheckoutQueryAsync(pcq.Id, false, GetTranslation("DonateError", GetLanguage(pcq.From.Id)));
+                else
+                    Bot.Api.AnswerPreCheckoutQueryAsync(pcq.Id, true);
+            }
         }
 
         private static void BotOnChosenInlineResultReceived(object sender, ChosenInlineResultEventArgs chosenInlineResultEventArgs)
