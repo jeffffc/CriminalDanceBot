@@ -14,6 +14,12 @@ namespace Database
     
     public partial class Game
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
+        public Game()
+        {
+            this.GamePlayers = new HashSet<GamePlayer>();
+        }
+    
         public int Id { get; set; }
         public int GrpId { get; set; }
         public string GroupName { get; set; }
@@ -24,5 +30,7 @@ namespace Database
         public string SpecialWinner { get; set; }
     
         public virtual Group Group { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<GamePlayer> GamePlayers { get; set; }
     }
 }

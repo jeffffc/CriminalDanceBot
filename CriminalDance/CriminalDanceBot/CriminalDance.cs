@@ -31,6 +31,8 @@ namespace CriminalDanceBot
         public GameAction NowAction = GameAction.FirstFinder;
         private int _playerList = 0;
 
+        public Database.Game DbGame;
+
         public Locale Locale;
         public string Language = "English";
 
@@ -127,6 +129,31 @@ namespace CriminalDanceBot
                     }
 
                     Bot.Send(ChatId, GetTranslation("GameStart"));
+
+                    // create game + gameplayers in db
+                    using (var db = new CrimDanceDb())
+                    {
+                        DbGame = new Database.Game
+                        {
+                            GrpId = DbGroup.Id,
+                            GroupId = ChatId,
+                            GroupName = GroupName,
+                            TimeStarted = DateTime.UtcNow
+                        };
+                        db.Games.Add(DbGame);
+                        db.SaveChanges();
+                        foreach (var p in Players)
+                        {
+                            GamePlayer DbGamePlayer = new GamePlayer
+                            {
+                                PlayerId = db.Players.FirstOrDefault(x => x.TelegramId == p.TelegramUserId).Id,
+                                GameId = DbGame.Id
+                            };
+                            db.GamePlayers.Add(DbGamePlayer);
+                        }
+                        db.SaveChanges();
+                    }
+
                     PrepareGame(Players.Count());
 
                     // remove joined players from nextgame list

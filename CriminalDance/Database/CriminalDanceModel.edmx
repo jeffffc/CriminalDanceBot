@@ -31,9 +31,10 @@
           <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="PlayerId" Type="int" Nullable="false" />
           <Property Name="GameId" Type="int" Nullable="false" />
-          <Property Name="Survived" Type="bit" Nullable="false" />
           <Property Name="Won" Type="bit" Nullable="false" />
-          <Property Name="Role" Type="nvarchar" MaxLength="50" />
+          <Property Name="Accomplice" Type="bit" Nullable="false" />
+          <Property Name="FinalTeam" Type="nvarchar" MaxLength="50" />
+          <Property Name="SpecialRole" Type="nvarchar" MaxLength="50" />
         </EntityType>
         <EntityType Name="Group">
           <Key>
@@ -84,6 +85,18 @@ warning 6002: The table/view 'criminaldance.dbo.NotifyGame' does not have a prim
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_GamePlayer_Game">
+          <End Role="Game" Type="Self.Game" Multiplicity="1" />
+          <End Role="GamePlayer" Type="Self.GamePlayer" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Game">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="GamePlayer">
+              <PropertyRef Name="GameId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_GamePlayer_Player">
           <End Role="Player" Type="Self.Player" Multiplicity="1" />
           <End Role="GamePlayer" Type="Self.GamePlayer" Multiplicity="*" />
@@ -112,6 +125,10 @@ warning 6002: The table/view 'criminaldance.dbo.NotifyGame' does not have a prim
             <End Role="Group" EntitySet="Group" />
             <End Role="Game" EntitySet="Game" />
           </AssociationSet>
+          <AssociationSet Name="FK_GamePlayer_Game" Association="Self.FK_GamePlayer_Game">
+            <End Role="Game" EntitySet="Game" />
+            <End Role="GamePlayer" EntitySet="GamePlayer" />
+          </AssociationSet>
           <AssociationSet Name="FK_GamePlayer_Player" Association="Self.FK_GamePlayer_Player">
             <End Role="Player" EntitySet="Player" />
             <End Role="GamePlayer" EntitySet="GamePlayer" />
@@ -127,32 +144,24 @@ warning 6002: The table/view 'criminaldance.dbo.NotifyGame' does not have a prim
           </Key>
           <Property Name="UserId" Type="Int32" Nullable="false" />
         </EntityType>
-        <EntityType Name="GamePlayer">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="PlayerId" Type="Int32" Nullable="false" />
-          <Property Name="GameId" Type="Int32" Nullable="false" />
-          <Property Name="Survived" Type="Boolean" Nullable="false" />
-          <Property Name="Won" Type="Boolean" Nullable="false" />
-          <Property Name="Role" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
-          <NavigationProperty Name="Player" Relationship="CriminalDanceModel.FK_GamePlayer_Player" FromRole="GamePlayer" ToRole="Player" />
-        </EntityType>
         <EntityContainer Name="CrimDanceDb" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="Admins" EntityType="Self.Admin" />
-          <EntitySet Name="GamePlayers" EntityType="Self.GamePlayer" />
           <EntitySet Name="NotifyGames" EntityType="CriminalDanceModel.NotifyGame" />
           <EntitySet Name="Groups" EntityType="CriminalDanceModel.Group" />
-          <EntitySet Name="Players" EntityType="CriminalDanceModel.Player" />
-          <AssociationSet Name="FK_GamePlayer_Player" Association="CriminalDanceModel.FK_GamePlayer_Player">
-            <End Role="Player" EntitySet="Players" />
-            <End Role="GamePlayer" EntitySet="GamePlayers" />
-          </AssociationSet>
           <EntitySet Name="Games" EntityType="CriminalDanceModel.Game" />
+          <EntitySet Name="GamePlayers" EntityType="CriminalDanceModel.GamePlayer" />
+          <EntitySet Name="Players" EntityType="CriminalDanceModel.Player" />
           <AssociationSet Name="FK_Game_Group" Association="CriminalDanceModel.FK_Game_Group">
             <End Role="Group" EntitySet="Groups" />
             <End Role="Game" EntitySet="Games" />
+          </AssociationSet>
+          <AssociationSet Name="FK_GamePlayer_Game" Association="CriminalDanceModel.FK_GamePlayer_Game">
+            <End Role="Game" EntitySet="Games" />
+            <End Role="GamePlayer" EntitySet="GamePlayers" />
+          </AssociationSet>
+          <AssociationSet Name="FK_GamePlayer_Player" Association="CriminalDanceModel.FK_GamePlayer_Player">
+            <End Role="Player" EntitySet="Players" />
+            <End Role="GamePlayer" EntitySet="GamePlayers" />
           </AssociationSet>
         </EntityContainer>
         <EntityType Name="NotifyGame">
@@ -177,6 +186,35 @@ warning 6002: The table/view 'criminaldance.dbo.NotifyGame' does not have a prim
           <Property Name="CreatedTime" Type="DateTime" Precision="3" />
           <NavigationProperty Name="Games" Relationship="CriminalDanceModel.FK_Game_Group" FromRole="Group" ToRole="Game" />
         </EntityType>
+        <EntityType Name="Game">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="GrpId" Type="Int32" Nullable="false" />
+          <Property Name="GroupName" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="GroupId" Type="Int64" Nullable="false" />
+          <Property Name="TimeStarted" Type="DateTime" Precision="3" />
+          <Property Name="TimeEnded" Type="DateTime" Precision="3" />
+          <Property Name="WinningTeam" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="SpecialWinner" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="Group" Relationship="CriminalDanceModel.FK_Game_Group" FromRole="Game" ToRole="Group" />
+          <NavigationProperty Name="GamePlayers" Relationship="CriminalDanceModel.FK_GamePlayer_Game" FromRole="Game" ToRole="GamePlayer" />
+        </EntityType>
+        <EntityType Name="GamePlayer">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="PlayerId" Type="Int32" Nullable="false" />
+          <Property Name="GameId" Type="Int32" Nullable="false" />
+          <Property Name="Won" Type="Boolean" Nullable="false" />
+          <Property Name="Accomplice" Type="Boolean" Nullable="false" />
+          <Property Name="FinalTeam" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="SpecialRole" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="Game" Relationship="CriminalDanceModel.FK_GamePlayer_Game" FromRole="GamePlayer" ToRole="Game" />
+          <NavigationProperty Name="Player" Relationship="CriminalDanceModel.FK_GamePlayer_Player" FromRole="GamePlayer" ToRole="Player" />
+        </EntityType>
         <EntityType Name="Player">
           <Key>
             <PropertyRef Name="Id" />
@@ -192,32 +230,6 @@ warning 6002: The table/view 'criminaldance.dbo.NotifyGame' does not have a prim
           <Property Name="Achievements" Type="Int64" />
           <NavigationProperty Name="GamePlayers" Relationship="CriminalDanceModel.FK_GamePlayer_Player" FromRole="Player" ToRole="GamePlayer" />
         </EntityType>
-        <Association Name="FK_GamePlayer_Player">
-          <End Type="CriminalDanceModel.Player" Role="Player" Multiplicity="1" />
-          <End Type="CriminalDanceModel.GamePlayer" Role="GamePlayer" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="Player">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="GamePlayer">
-              <PropertyRef Name="PlayerId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <EntityType Name="Game">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="GrpId" Type="Int32" Nullable="false" />
-          <Property Name="GroupName" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="GroupId" Type="Int64" Nullable="false" />
-          <Property Name="TimeStarted" Type="DateTime" Precision="3" />
-          <Property Name="TimeEnded" Type="DateTime" Precision="3" />
-          <Property Name="WinningTeam" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Name="SpecialWinner" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
-          <NavigationProperty Name="Group" Relationship="CriminalDanceModel.FK_Game_Group" FromRole="Game" ToRole="Group" />
-        </EntityType>
         <Association Name="FK_Game_Group">
           <End Type="CriminalDanceModel.Group" Role="Group" Multiplicity="1" />
           <End Type="CriminalDanceModel.Game" Role="Game" Multiplicity="*" />
@@ -227,6 +239,30 @@ warning 6002: The table/view 'criminaldance.dbo.NotifyGame' does not have a prim
             </Principal>
             <Dependent Role="Game">
               <PropertyRef Name="GrpId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_GamePlayer_Game">
+          <End Type="CriminalDanceModel.Game" Role="Game" Multiplicity="1" />
+          <End Type="CriminalDanceModel.GamePlayer" Role="GamePlayer" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Game">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="GamePlayer">
+              <PropertyRef Name="GameId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_GamePlayer_Player">
+          <End Type="CriminalDanceModel.Player" Role="Player" Multiplicity="1" />
+          <End Type="CriminalDanceModel.GamePlayer" Role="GamePlayer" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Player">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="GamePlayer">
+              <PropertyRef Name="PlayerId" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -240,18 +276,6 @@ warning 6002: The table/view 'criminaldance.dbo.NotifyGame' does not have a prim
             <EntityTypeMapping TypeName="CriminalDanceModel.Admin">
               <MappingFragment StoreEntitySet="Admin">
                 <ScalarProperty Name="UserId" ColumnName="UserId" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="GamePlayers">
-            <EntityTypeMapping TypeName="CriminalDanceModel.GamePlayer">
-              <MappingFragment StoreEntitySet="GamePlayer">
-                <ScalarProperty Name="Id" ColumnName="Id" />
-                <ScalarProperty Name="PlayerId" ColumnName="PlayerId" />
-                <ScalarProperty Name="GameId" ColumnName="GameId" />
-                <ScalarProperty Name="Survived" ColumnName="Survived" />
-                <ScalarProperty Name="Won" ColumnName="Won" />
-                <ScalarProperty Name="Role" ColumnName="Role" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -277,6 +301,33 @@ warning 6002: The table/view 'criminaldance.dbo.NotifyGame' does not have a prim
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
+          <EntitySetMapping Name="Games">
+            <EntityTypeMapping TypeName="CriminalDanceModel.Game">
+              <MappingFragment StoreEntitySet="Game">
+                <ScalarProperty Name="SpecialWinner" ColumnName="SpecialWinner" />
+                <ScalarProperty Name="WinningTeam" ColumnName="WinningTeam" />
+                <ScalarProperty Name="TimeEnded" ColumnName="TimeEnded" />
+                <ScalarProperty Name="TimeStarted" ColumnName="TimeStarted" />
+                <ScalarProperty Name="GroupId" ColumnName="GroupId" />
+                <ScalarProperty Name="GroupName" ColumnName="GroupName" />
+                <ScalarProperty Name="GrpId" ColumnName="GrpId" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="GamePlayers">
+            <EntityTypeMapping TypeName="CriminalDanceModel.GamePlayer">
+              <MappingFragment StoreEntitySet="GamePlayer">
+                <ScalarProperty Name="SpecialRole" ColumnName="SpecialRole" />
+                <ScalarProperty Name="FinalTeam" ColumnName="FinalTeam" />
+                <ScalarProperty Name="Accomplice" ColumnName="Accomplice" />
+                <ScalarProperty Name="Won" ColumnName="Won" />
+                <ScalarProperty Name="GameId" ColumnName="GameId" />
+                <ScalarProperty Name="PlayerId" ColumnName="PlayerId" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
           <EntitySetMapping Name="Players">
             <EntityTypeMapping TypeName="CriminalDanceModel.Player">
               <MappingFragment StoreEntitySet="Player">
@@ -288,20 +339,6 @@ warning 6002: The table/view 'criminaldance.dbo.NotifyGame' does not have a prim
                 <ScalarProperty Name="UserName" ColumnName="UserName" />
                 <ScalarProperty Name="Name" ColumnName="Name" />
                 <ScalarProperty Name="TelegramId" ColumnName="TelegramId" />
-                <ScalarProperty Name="Id" ColumnName="Id" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="Games">
-            <EntityTypeMapping TypeName="CriminalDanceModel.Game">
-              <MappingFragment StoreEntitySet="Game">
-                <ScalarProperty Name="SpecialWinner" ColumnName="SpecialWinner" />
-                <ScalarProperty Name="WinningTeam" ColumnName="WinningTeam" />
-                <ScalarProperty Name="TimeEnded" ColumnName="TimeEnded" />
-                <ScalarProperty Name="TimeStarted" ColumnName="TimeStarted" />
-                <ScalarProperty Name="GroupId" ColumnName="GroupId" />
-                <ScalarProperty Name="GroupName" ColumnName="GroupName" />
-                <ScalarProperty Name="GrpId" ColumnName="GrpId" />
                 <ScalarProperty Name="Id" ColumnName="Id" />
               </MappingFragment>
             </EntityTypeMapping>

@@ -17,10 +17,12 @@ namespace Database
         public int Id { get; set; }
         public int PlayerId { get; set; }
         public int GameId { get; set; }
-        public bool Survived { get; set; }
         public bool Won { get; set; }
-        public string Role { get; set; }
+        public bool Accomplice { get; set; }
+        public string FinalTeam { get; set; }
+        public string SpecialRole { get; set; }
     
+        public virtual Game Game { get; set; }
         public virtual Player Player { get; set; }
     }
 }
