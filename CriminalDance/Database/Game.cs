@@ -15,13 +15,13 @@ namespace Database
     public partial class Game
     {
         public int Id { get; set; }
+        public int GrpId { get; set; }
         public string GroupName { get; set; }
         public long GroupId { get; set; }
         public Nullable<System.DateTime> TimeStarted { get; set; }
         public Nullable<System.DateTime> TimeEnded { get; set; }
-        public string Winner { get; set; }
-        public Nullable<int> GrpId { get; set; }
-        public string Mode { get; set; }
+        public string WinningTeam { get; set; }
+        public string SpecialWinner { get; set; }
     
         public virtual Group Group { get; set; }
     }

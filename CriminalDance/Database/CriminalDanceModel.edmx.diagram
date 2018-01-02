@@ -6,14 +6,13 @@
     <edmx:Diagrams>
       <Diagram DiagramId="4f09559c35cc4d09b0796434863312b2" Name="Diagram1" ZoomLevel="63">
         <EntityTypeShape EntityType="CriminalDanceModel.Admin" Width="1.5" PointX="5.75" PointY="0.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="CriminalDanceModel.Game" Width="1.5" PointX="3" PointY="1.25" IsExpanded="true" />
         <EntityTypeShape EntityType="CriminalDanceModel.GamePlayer" Width="1.5" PointX="5.25" PointY="6.125" IsExpanded="true" />
-        <EntityTypeShape EntityType="CriminalDanceModel.Player" Width="1.5" PointX="3" PointY="4.75" IsExpanded="true" />
-        <AssociationConnector Association="CriminalDanceModel.FK_GamePlayer_Player" ManuallyRouted="false" />
-        <EntityTypeShape EntityType="CriminalDanceModel.Group" Width="1.5" PointX="0.75" PointY="3.875" />
-        <AssociationConnector Association="CriminalDanceModel.FK_Game_Group" />
-        <AssociationConnector Association="CriminalDanceModel.GroupAdmin" />
         <EntityTypeShape EntityType="CriminalDanceModel.NotifyGame" Width="1.5" PointX="5.375" PointY="2.75" />
+        <EntityTypeShape EntityType="CriminalDanceModel.Group" Width="1.5" PointX="0.75" PointY="1.5" />
+        <EntityTypeShape EntityType="CriminalDanceModel.Player" Width="1.5" PointX="3" PointY="5.875" />
+        <AssociationConnector Association="CriminalDanceModel.FK_GamePlayer_Player" />
+        <EntityTypeShape EntityType="CriminalDanceModel.Game" Width="1.5" PointX="3" PointY="1.5" />
+        <AssociationConnector Association="CriminalDanceModel.FK_Game_Group" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

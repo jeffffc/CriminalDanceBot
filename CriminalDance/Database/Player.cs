@@ -18,7 +18,6 @@ namespace Database
         public Player()
         {
             this.GamePlayers = new HashSet<GamePlayer>();
-            this.Groups = new HashSet<Group>();
         }
     
         public int Id { get; set; }
@@ -27,23 +26,11 @@ namespace Database
         public string UserName { get; set; }
         public Nullable<bool> Banned { get; set; }
         public string BannedBy { get; set; }
-        public Nullable<bool> HasPM { get; set; }
         public string BanReason { get; set; }
-        public string ImageFile { get; set; }
         public string Language { get; set; }
-        public Nullable<int> TempBanCount { get; set; }
-        public Nullable<bool> HasPM2 { get; set; }
-        public Nullable<bool> HasDebugPM { get; set; }
         public Nullable<long> Achievements { get; set; }
-        public string WebUserId { get; set; }
-        public Nullable<int> DonationLevel { get; set; }
-        public Nullable<bool> Founder { get; set; }
-        public string CustomGifSet { get; set; }
-        public Nullable<bool> GifPurchased { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<GamePlayer> GamePlayers { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Group> Groups { get; set; }
     }
 }

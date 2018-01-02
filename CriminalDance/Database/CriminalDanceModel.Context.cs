@@ -26,10 +26,10 @@ namespace Database
         }
     
         public virtual DbSet<Admin> Admins { get; set; }
-        public virtual DbSet<Game> Games { get; set; }
         public virtual DbSet<GamePlayer> GamePlayers { get; set; }
-        public virtual DbSet<Player> Players { get; set; }
-        public virtual DbSet<Group> Groups { get; set; }
         public virtual DbSet<NotifyGame> NotifyGames { get; set; }
+        public virtual DbSet<Group> Groups { get; set; }
+        public virtual DbSet<Player> Players { get; set; }
+        public virtual DbSet<Game> Games { get; set; }
     }
 }
