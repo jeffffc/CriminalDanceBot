@@ -275,7 +275,7 @@ namespace CriminalDanceBot
                 for (int i = 0; i < Constants.ChooseCardTime; i++)
                 {
                     Thread.Sleep(1000);
-                    if (p.CardChoice1 != null)
+                    if (p.CurrentQuestion == null)
                         break;
                 }
                 try
@@ -404,7 +404,7 @@ namespace CriminalDanceBot
                 for (int i = 0; i < Constants.ChooseCardTime; i++)
                 {
                     Thread.Sleep(1000);
-                    if (p.PlayerChoice1 != 0)
+                    if (p.CurrentQuestion == null)
                         break;
                 }
                 try
@@ -435,7 +435,7 @@ namespace CriminalDanceBot
                 for (int i = 0; i < Constants.ChooseCardTime; i++)
                 {
                     Thread.Sleep(1000);
-                    if (BarterPlayers.All(x => x.CardChoice1 != null))
+                    if (BarterPlayers.All(x => x.CurrentQuestion == null))
                         break;
                 }
                 try
@@ -489,7 +489,7 @@ namespace CriminalDanceBot
                 for (int i = 0; i < Constants.ChooseCardTime; i++)
                 {
                     Thread.Sleep(1000);
-                    if (p.PlayerChoice1 != 0)
+                    if (p.CurrentQuestion == null)
                         break;
                 }
                 try
@@ -544,7 +544,7 @@ namespace CriminalDanceBot
                 for (int i = 0; i < Constants.ChooseCardTime; i++)
                 {
                     Thread.Sleep(1000);
-                    if (Players.All(x => x.CardChoice1 != null))
+                    if (Players.All(x => x.CurrentQuestion == null))
                         break;
                 }
                 try
@@ -646,7 +646,7 @@ namespace CriminalDanceBot
                     for (int i = 0; i < Constants.ChooseCardTime; i++)
                     {
                         Thread.Sleep(1000);
-                        if (p.PlayerChoice1 != 0)
+                        if (p.CurrentQuestion == null)
                             break;
                     }
                     try
@@ -716,7 +716,7 @@ namespace CriminalDanceBot
                 for (int i = 0; i < Constants.ChooseCardTime; i++)
                 {
                     Thread.Sleep(1000);
-                    if (p.PlayerChoice1 != 0)
+                    if (p.CurrentQuestion == null)
                         break;
                 }
                 try

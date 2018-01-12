@@ -92,10 +92,17 @@ namespace CriminalDanceBot
                 msg += Environment.NewLine + $"Number of Games: {gameCount.ToString()}";
                 Console.WriteLine(msg);
 
-                var table = new ConsoleTable("Game GUID", "Phase", "InGame Action", "# of Players");
+                var table = new ConsoleTable("Game GUID",　"ChatId", "Phase", "# of Players", "InGame Action");
                 foreach (CriminalDance game in games)
                 {
-                    table.AddRow(game.Id.ToString(), game.Phase.ToString(), game.Phase == CriminalDance.GamePhase.InGame ? game.NowAction.ToString() : "------", game.Players.Count().ToString());
+                    table.AddRow(game.Id.ToString(), game.ChatId.ToString(), game.Phase.ToString(), game.Players.Count().ToString(), game.Phase == CriminalDance.GamePhase.InGame ? game.NowAction.ToString() : "------");
+                    if (game.Phase == CriminalDance.GamePhase.InGame && game.PlayerQueue.Count > 0)
+                    {
+                        var p = game.PlayerQueue.Peek();
+                        table.AddRow("--->", "Current Player:", p.Name, "Player/Card Choice",
+                            (p.PlayerChoice1 != null || p.CardChoice1 != null) ? (p.PlayerChoice1 != null ? p.PlayerChoice1.ToString() : p.CardChoice1.ToString()) : "-----");
+
+                    }
                 }
                 table.Write(Format.Alternative);
                 

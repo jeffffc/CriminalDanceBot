@@ -82,6 +82,7 @@
   <ItemGroup>
     <Compile Include="Attributes\Command.cs" />
     <Compile Include="Bot.cs" />
+    <Compile Include="Commands\DevCommands.cs" />
     <Compile Include="Commands\GameCommands.cs" />
     <Compile Include="Commands\GeneralCommands.cs" />
     <Compile Include="Commands\Helpers.cs" />
