@@ -9,6 +9,8 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.InlineKeyboardButtons;
 using Telegram.Bot.Types.ReplyMarkups;
 using System.IO;
+using System.Diagnostics;
+using System.Threading;
 
 namespace CriminalDanceBot.Handlers
 {
@@ -109,7 +111,9 @@ namespace CriminalDanceBot.Handlers
                     case "update":
                         if (args[1] == "yes")
                         {
-                            Commands.Update(query.Message, args);
+                            Process.Start(Path.Combine(@"C:\CrimDance\", "Updater.exe"), query.Message.Chat.Id.ToString());
+                            Program.MaintMode = true;
+                            new Thread(Commands.CheckCurrentGames).Start();
                             Bot.Api.EditMessageTextAsync(query.Message.Chat.Id, query.Message.MessageId, "Ok. I will restart the bot now.");
                         }
                         else

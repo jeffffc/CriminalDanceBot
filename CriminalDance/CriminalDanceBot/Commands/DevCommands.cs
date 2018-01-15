@@ -25,7 +25,7 @@ namespace CriminalDanceBot
             }
         }
 
-        private static void CheckCurrentGames()
+        public static void CheckCurrentGames()
         {
             while (Bot.Gm.Games.Count > 0)
                 Thread.Sleep(1000);
