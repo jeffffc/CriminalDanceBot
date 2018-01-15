@@ -1054,6 +1054,7 @@ namespace CriminalDanceBot
                         break;
                 }
                 Bot.Edit(p.TelegramUserId, p.CurrentQuestion.MessageId, GetTranslation("ReceivedButton"));
+                p.CurrentQuestion = null;
             }
         }
 
