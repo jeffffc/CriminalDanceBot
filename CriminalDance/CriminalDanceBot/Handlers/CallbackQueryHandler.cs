@@ -21,7 +21,7 @@ namespace CriminalDanceBot.Handlers
                 string[] args = query.Data.Split('|');
 
                 //dev only buttons
-                if (new[] { "upload" }.Contains(args[0]))
+                if (new[] { "upload", "update" }.Contains(args[0]))
                 {
                     //global admin only commands
                     if (!Constants.Dev.Contains(query.From.Id) /* && !Helpers.IsGlobalAdmin(query.From.Id) */)
@@ -105,6 +105,15 @@ namespace CriminalDanceBot.Handlers
                             return;
                         }
                         Commands.UseNewLanguageFile(args[2], query.Message.Chat.Id, query.Message.MessageId);
+                        return;
+                    case "update":
+                        if (args[1] == "yes")
+                        {
+                            Commands.Update(query.Message, args);
+                            Bot.Api.EditMessageTextAsync(query.Message.Chat.Id, query.Message.MessageId, "Ok. I will restart the bot now.");
+                        }
+                        else
+                            Bot.Api.EditMessageTextAsync(query.Message.Chat.Id, query.Message.MessageId, "Ok. I will do nothing now.");
                         return;
                 }
 
