@@ -9,12 +9,12 @@
         <EntityTypeShape EntityType="CriminalDanceModel.NotifyGame" Width="1.5" PointX="5.375" PointY="2.75" />
         <EntityTypeShape EntityType="CriminalDanceModel.Group" Width="1.5" PointX="0.75" PointY="1.5" />
         <EntityTypeShape EntityType="CriminalDanceModel.Game" Width="1.5" PointX="3" PointY="1.375" />
-        <EntityTypeShape EntityType="CriminalDanceModel.GamePlayer" Width="1.5" PointX="8.25" PointY="1.5" />
         <EntityTypeShape EntityType="CriminalDanceModel.Player" Width="1.5" PointX="6" PointY="5.375" />
         <AssociationConnector Association="CriminalDanceModel.FK_Game_Group" />
+        <EntityTypeShape EntityType="CriminalDanceModel.Donation" Width="1.5" PointX="0.75" PointY="5.75" />
+        <EntityTypeShape EntityType="CriminalDanceModel.GamePlayer" Width="1.5" PointX="8.25" PointY="3.625" />
         <AssociationConnector Association="CriminalDanceModel.FK_GamePlayer_Game" />
         <AssociationConnector Association="CriminalDanceModel.FK_GamePlayer_Player" />
-        <EntityTypeShape EntityType="CriminalDanceModel.Donation" Width="1.5" PointX="0.75" PointY="5.75" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

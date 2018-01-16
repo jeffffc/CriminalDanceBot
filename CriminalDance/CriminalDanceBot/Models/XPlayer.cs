@@ -13,6 +13,7 @@ namespace CriminalDanceBot.Models
         public string Name { get; set; }
         public string Username { get; set; }
         public int Id { get; set; }
+        public bool? Won { get; set; }
         public string CardsInHand { get; set; } = null;
         public XCard TempCard { get; set; } = null;
         public bool CardChanged { get; set; } = false;
