@@ -33,6 +33,8 @@ namespace CriminalDanceBot
 
             Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
 
+            Bot.Send(Constants.LogGroupId, $"Bot started! Version: {version.ToString()}");
+
             Console.Title = $"CriminalDanceBot - Connected to {Bot.Me.FirstName} (@{Bot.Me.Username} | {Bot.Me.Id}) - Version {version.ToString()}";
 
             foreach (var m in typeof(Commands).GetMethods())

@@ -19,6 +19,7 @@ namespace CriminalDanceBot
     {
         public long ChatId;
         public string GroupName;
+        public int GameId;
         public Group DbGroup;
         public List<XPlayer> Players = new List<XPlayer>();
         public Queue<XPlayer> PlayerQueue = new Queue<XPlayer>();
@@ -37,6 +38,7 @@ namespace CriminalDanceBot
         public string Language = "English";
 
         public XPlayer Winner;
+        public XPlayer Culprit;
         public XCardType WinnerType;
 
         public CriminalDance(long chatId, User u, string groupName)
@@ -140,18 +142,19 @@ namespace CriminalDanceBot
                             GroupName = GroupName,
                             TimeStarted = DateTime.UtcNow
                         };
-                        // db.Games.Add(DbGame); // db not ready yet
-                        // db.SaveChanges(); // db not ready yet
+                        GameId = DbGame.Id;
+                        db.Games.Add(DbGame);
+                        db.SaveChanges();
                         foreach (var p in Players)
                         {
                             GamePlayer DbGamePlayer = new GamePlayer
                             {
                                 PlayerId = db.Players.FirstOrDefault(x => x.TelegramId == p.TelegramUserId).Id,
-                                GameId = DbGame.Id
+                                GameId = GameId
                             };
-                            // db.GamePlayers.Add(DbGamePlayer); // db not ready yet
+                            db.GamePlayers.Add(DbGamePlayer);
                         }
-                        // db.SaveChanges(); // db not ready yet
+                        db.SaveChanges();
                     }
 
                     PrepareGame(Players.Count());
@@ -684,6 +687,7 @@ namespace CriminalDanceBot
                             {
                                 // has culprit, no alibi ==> lose
                                 Winner = p;
+                                Culprit = p2;
                                 WinnerType = XCardType.Detective;
                                 NowAction = GameAction.Ending;
                                 Send(GetTranslation("DetectiveCorrect", GetName(p), GetName(p2)));
@@ -941,19 +945,39 @@ namespace CriminalDanceBot
                     if (accomplices.Count > 0)
                         msg += GetTranslation("WinningAccomplices", accomplices.Select(x => GetName(x)).Aggregate((x, y) => x + GetTranslation("And") + y));
                     msg += GetTranslation("WinningCulpritWon");
+                    if (accomplices.Count > 0)
+                    {
+                        foreach (var p in accomplices)
+                            p.Won = true;
+                    }
+                    culprit.Won = true;
                     break;
                 case XCardType.Dog:
                     var dog = Winner;
+                    dog.Won = true;
                     msg = GetTranslation("WinningDog", GetName(dog));
                     break;
                 case XCardType.Detective:
                     var detective = Winner;
+                    var bad = Players.FindAll(x => x.Accomplice == true || x.TelegramUserId == Culprit.TelegramUserId);
                     msg = GetTranslation("WinningDetective", GetName(detective));
+                    foreach (var p in Players.Where(x => !bad.Contains(x)))
+                        p.Won = true;
                     break;
             }
             Send(msg);
 
-            Phase = GamePhase.Ending;
+            // db
+            using (var db = new CrimDanceDb())
+            {
+                foreach (var p in Players)
+                {
+                    var gp = db.GamePlayers.FirstOrDefault(x => x.GameId == GameId && x.PlayerId == p.Id);
+                    gp.Won = p.Won;
+                    gp.Accomplice = p.Accomplice;
+                }
+            }
+                Phase = GamePhase.Ending;
         }
         #endregion
 
