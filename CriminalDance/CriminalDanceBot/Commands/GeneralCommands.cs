@@ -163,6 +163,25 @@ namespace CriminalDanceBot
             }
         }
 
+        [Command(Trigger = "rules")]
+        public static void Rules(Message msg, string[] args)
+        {
+            try
+            {
+                Bot.Send(msg.From.Id, GetTranslation("Rules", GetLanguage(msg.From.Id)));
+            }
+            catch
+            {
+                msg.Reply(GetTranslation("NotStartedBot", GetLanguage(msg.From.Id)), GenerateStartMe(msg.From.Id));
+                return;
+            }
+            if (msg.Chat.Type != ChatType.Private)
+            {
+                msg.Reply(GetTranslation("SentPM", GetLanguage(msg.From.Id)));
+                return;
+            }
+        }
+
         [Command(Trigger = "donate")]
         public static void Donate(Message msg, string[] args)
         {

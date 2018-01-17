@@ -391,6 +391,15 @@ namespace CriminalDanceBot
             }
         }
 
+        public static InlineKeyboardMarkup GenerateStartMe(int id)
+        {
+            var row = new List<InlineKeyboardButton>();
+            var rows = new List<InlineKeyboardButton[]>();
+            row.Add(new InlineKeyboardUrlButton(GetTranslation("StartMe", GetLanguage(id)), $"https://telegram.me/{Bot.Me.Username}"));
+            rows.Add(row.ToArray());
+            return new InlineKeyboardMarkup(rows.ToArray());
+        }
+
         public class LanguageError
         {
             public string File { get; set; }
