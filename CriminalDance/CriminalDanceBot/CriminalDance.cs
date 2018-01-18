@@ -142,9 +142,9 @@ namespace CriminalDanceBot
                             GroupName = GroupName,
                             TimeStarted = DateTime.UtcNow
                         };
-                        GameId = DbGame.Id;
                         db.Games.Add(DbGame);
                         db.SaveChanges();
+                        GameId = DbGame.Id;
                         foreach (var p in Players)
                         {
                             GamePlayer DbGamePlayer = new GamePlayer
