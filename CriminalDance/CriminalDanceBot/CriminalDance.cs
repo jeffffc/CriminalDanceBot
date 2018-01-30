@@ -56,7 +56,10 @@ namespace CriminalDanceBot
             // something
             #endregion
 
-            Bot.Send(chatId, GetTranslation("NewGame", GetName(u)));
+            var msg = GetTranslation("NewGame", GetName(u));
+            // beta message
+            msg += Environment.NewLine + Environment.NewLine + GetTranslation("Beta");
+            Bot.Send(chatId, msg);
             AddPlayer(u, true);
             Initiator = Players[0];
             new Task(() => { NotifyNextGamePlayers(); }).Start();
@@ -822,7 +825,7 @@ namespace CriminalDanceBot
         {
             var cards = p.Cards.FindAll(x => x.Type != XCardType.Culprit);
             var c = cards[Helper.RandomNum(cards.Count)];
-            Send(GetTranslation("DumpCard", GetName(p), GetName(c)));
+            Send(GetTranslation(c.Type == XCardType.Accomplice ? "DumpAccomplice" : "DumpCard", GetName(p), GetName(c)));
             UseCard(p, c, true);
         }
 
@@ -960,7 +963,10 @@ namespace CriminalDanceBot
                 case XCardType.Detective:
                     var detective = Winner;
                     var bad = Players.FindAll(x => x.Accomplice == true || x.TelegramUserId == Culprit.TelegramUserId);
-                    msg = GetTranslation("WinningDetective", GetName(detective));
+                    if (detective.Accomplice)
+                        msg = GetTranslation("AccompliceTraitorDetectCulprit", detective.GetName());
+                    else
+                        msg = GetTranslation("WinningDetective", GetName(detective));
                     foreach (var p in Players.Where(x => !bad.Contains(x)))
                         p.Won = true;
                     break;
@@ -1041,6 +1047,7 @@ namespace CriminalDanceBot
             {
 
                 GameAction actionType = (GameAction)Int32.Parse(args[2]);
+                bool isPlayer = false;
                 switch (actionType)
                 {
                     case GameAction.NormalCard:
@@ -1055,11 +1062,15 @@ namespace CriminalDanceBot
                             BotMethods.AnswerCallback(query, cards, true);
                         }
                         p.PlayerChoice1 = playerChoice1;
+                        isPlayer = true;
                         break;
                     case GameAction.Barter:
                         int a;
                         if (int.TryParse(args[3], out a))
+                        {
                             p.PlayerChoice1 = a;
+                            isPlayer = true;
+                        }
                         else
                             p.CardChoice1 = args[3];
                         break;
@@ -1068,16 +1079,20 @@ namespace CriminalDanceBot
                         break;
                     case GameAction.Detective:
                         p.PlayerChoice1 = Int32.Parse(args[3]);
+                        isPlayer = true;
                         break;
                     case GameAction.Dog:
                         int b;
                         if (int.TryParse(args[3], out b))
+                        {
                             p.PlayerChoice1 = b;
+                            isPlayer = true;
+                        }
                         else
                             p.CardChoice1 = args[3];
                         break;
                 }
-                Bot.Edit(p.TelegramUserId, p.CurrentQuestion.MessageId, GetTranslation("ReceivedButton"));
+                Bot.Edit(p.TelegramUserId, p.CurrentQuestion.MessageId, $"{GetTranslation("ReceivedButton")} - {(isPlayer == true ? Players.FirstOrDefault(x => x.TelegramUserId == p.PlayerChoice1).Name : GetName(p.Cards.FirstOrDefault(x => x.Id == p.CardChoice1)))}");
                 p.CurrentQuestion = null;
             }
         }
