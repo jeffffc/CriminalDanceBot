@@ -15,7 +15,7 @@ namespace CriminalDanceBot
 {
     public static class Helper
     {
-        public static void LogError(this Exception e)
+        public static void LogError(this Exception e, long chatId = 0)
         {
 #if DEBUG
             /*
@@ -39,7 +39,9 @@ namespace CriminalDanceBot
             Console.ResetColor();
 
             */
-            string m = "Error occured." + Environment.NewLine + Environment.NewLine;
+            string m = "Error occured." + Environment.NewLine;
+            if (chatId > 0)
+                m += $"ChatId: {chatId}" + Environment.NewLine + Environment.NewLine;
             var trace = e.StackTrace;
             do
             {

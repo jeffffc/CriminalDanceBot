@@ -1276,7 +1276,7 @@ namespace CriminalDanceBot
 
         public void Log(Exception ex)
         {
-            Helper.LogError(ex);
+            Helper.LogError(ex, ChatId);
             Send("Sorry there is some problem with me, I gonna go die now.");
             this.Phase = GamePhase.Ending;
             Bot.Gm.RemoveGame(this);
