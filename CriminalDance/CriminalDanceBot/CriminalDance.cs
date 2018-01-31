@@ -297,11 +297,18 @@ namespace CriminalDanceBot
                 }
 
                 var cardchoice = p.CardChoice1;
-
+                var afkCulprit = false;
                 if (cardchoice == null)
                 {
-                    DumpCard(p);
-                    NowAction = GameAction.Next;
+                    afkCulprit = DumpCard(p);
+                    if (afkCulprit != true)
+                        NowAction = GameAction.Next;
+                    else
+                    {
+                        NowAction = GameAction.Ending;
+                        Winner = p;
+                        WinnerType = XCardType.Culprit;
+                    }
                     return;
                 }
                 var card = p.Cards.FirstOrDefault(x => x.Id == cardchoice);
@@ -821,12 +828,18 @@ namespace CriminalDanceBot
             }
         }
 
-        public void DumpCard(XPlayer p)
+        public bool DumpCard(XPlayer p)
         {
+            if (p.Cards.Count == 1 && p.Cards[0].Type == XCardType.Culprit)
+            { 
+                Send(GetTranslation("DumpCulprit", GetName(p), GetName(p.Cards[0])));
+                return true;
+            }
             var cards = p.Cards.FindAll(x => x.Type != XCardType.Culprit);
             var c = cards[Helper.RandomNum(cards.Count)];
             Send(GetTranslation(c.Type == XCardType.Accomplice ? "DumpAccomplice" : "DumpCard", GetName(p), GetName(c)));
             UseCard(p, c, true);
+            return false;
         }
 
         #endregion
@@ -982,8 +995,13 @@ namespace CriminalDanceBot
                     gp.Won = p.Won;
                     gp.Accomplice = p.Accomplice;
                 }
+                db.SaveChanges();
+                var g = db.Games.FirstOrDefault(x => x.Id == GameId);
+                g.TimeEnded = DateTime.Now;
+                g.WinningTeam = WinnerType == XCardType.Culprit ? "Bad" : WinnerType == XCardType.Dog ? "Dog" : "Good";
+                db.SaveChanges();
             }
-                Phase = GamePhase.Ending;
+            Phase = GamePhase.Ending;
         }
         #endregion
 
@@ -1059,7 +1077,13 @@ namespace CriminalDanceBot
                         if (p2 != null)
                         {
                             var cards = GenerateOwnCard(p2, true);
-                            BotMethods.AnswerCallback(query, cards, true);
+                            /* BotMethods.AnswerCallback(query, cards, true); */ // change back to old send message + delete method
+                            
+                            new Task(() => {
+                                var sent = SendPM(p, GetTranslation("CardsInPlayer", p2.GetName()) + Environment.NewLine + cards);
+                                Thread.Sleep(Constants.WitnessTime * 1000);
+                                Bot.Api.DeleteMessageAsync(sent.Chat.Id, sent.MessageId);
+                            });
                         }
                         p.PlayerChoice1 = playerChoice1;
                         isPlayer = true;
