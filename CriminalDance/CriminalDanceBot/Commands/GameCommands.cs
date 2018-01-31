@@ -132,7 +132,7 @@ namespace CriminalDanceBot
                     var notified = db.NotifyGames.FirstOrDefault(x => x.GroupId == grpId && x.UserId == msg.From.Id);
                     if (notified != null)
                     {
-                        msg.Reply(GetTranslation("AlreadyInWaitingList", GetLanguage(msg.From.Id)));
+                        Bot.Send(msg.From.Id, GetTranslation("AlreadyInWaitingList", GetLanguage(msg.From.Id)));
                         return;
                     }
                     else
@@ -140,7 +140,7 @@ namespace CriminalDanceBot
                     }
                     db.Database.ExecuteSqlCommand($"INSERT INTO NotifyGame VALUES ({msg.From.Id}, {msg.Chat.Id})");
                     db.SaveChanges();
-                    msg.Reply(GetTranslation("NextGame", GetLanguage(msg.From.Id)));
+                    Bot.Send(msg.From.Id, GetTranslation("NextGame", GetLanguage(msg.From.Id)));
                 }
             }
         }
