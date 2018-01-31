@@ -1083,7 +1083,7 @@ namespace CriminalDanceBot
                                 var sent = SendPM(p, GetTranslation("CardsInPlayer", p2.GetName()) + Environment.NewLine + cards);
                                 Thread.Sleep(Constants.WitnessTime * 1000);
                                 Bot.Api.DeleteMessageAsync(sent.Chat.Id, sent.MessageId);
-                            });
+                            }).Start();
                         }
                         p.PlayerChoice1 = playerChoice1;
                         isPlayer = true;
