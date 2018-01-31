@@ -84,7 +84,7 @@ namespace CriminalDanceBot
                         var count = Bot.Gm.Games.Count(x => x.ChatId == ChatId);
                         if (count > 1)
                         {
-                            var toDel = Bot.Gm.Games.FirstOrDefault(x => x.Id != this.Id);
+                            var toDel = Bot.Gm.Games.Where(x => x.ChatId == ChatId).Aggregate((g1, g2) => g1.Players.Count < g2.Players.Count ? g1 : g2);
                             Bot.Send(toDel.ChatId, GetTranslation("DuplicatedGameRemoving"));
                             toDel.Phase = GamePhase.Ending;
                             Bot.Gm.RemoveGame(toDel);
