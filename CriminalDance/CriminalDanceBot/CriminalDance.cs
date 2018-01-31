@@ -1081,7 +1081,7 @@ namespace CriminalDanceBot
                             /* BotMethods.AnswerCallback(query, cards, true); */ // change back to old send message + delete method
                             
                             new Task(() => {
-                                var sent = SendPM(p, GetTranslation("CardsInPlayer", p2.GetName()) + Environment.NewLine + cards);
+                                var sent = SendPM(p, cards);
                                 Thread.Sleep(Constants.WitnessTime * 1000);
                                 Bot.Api.DeleteMessageAsync(sent.Chat.Id, sent.MessageId);
                             }).Start();
@@ -1245,7 +1245,7 @@ namespace CriminalDanceBot
         {
             string m = "";
             if (witness)
-                m = GetTranslation("CardsInPlayer", p.Name) + Environment.NewLine;
+                m = GetTranslation("CardsInPlayer", p.GetName()) + Environment.NewLine;
             else
                 m = GetTranslation("CardsInHand") + Environment.NewLine;
             for (int i = 0; i < p.Cards.Count; i++)
