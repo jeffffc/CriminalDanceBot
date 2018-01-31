@@ -1074,7 +1074,8 @@ namespace CriminalDanceBot
                     case GameAction.Witness:
                         var playerChoice1 = Int32.Parse(args[3]);
                         XPlayer p2 = Players.FirstOrDefault(x => x.TelegramUserId == playerChoice1);
-                        if (p2 != null)
+                        p.PlayerChoice1 = playerChoice1;
+                        if (playerChoice1 != 0 && p2 != null)
                         {
                             var cards = GenerateOwnCard(p2, true);
                             /* BotMethods.AnswerCallback(query, cards, true); */ // change back to old send message + delete method
@@ -1085,7 +1086,7 @@ namespace CriminalDanceBot
                                 Bot.Api.DeleteMessageAsync(sent.Chat.Id, sent.MessageId);
                             }).Start();
                         }
-                        p.PlayerChoice1 = playerChoice1;
+                        
                         isPlayer = true;
                         break;
                     case GameAction.Barter:
