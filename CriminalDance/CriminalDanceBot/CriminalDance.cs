@@ -106,6 +106,8 @@ namespace CriminalDanceBot
                     Thread.Sleep(1000);
                 }
 
+                if (this.Phase == GamePhase.Ending)
+                    return;
                 do
                 {
                     XPlayer p = Players.FirstOrDefault(x => Players.Count(y => y.TelegramUserId == x.TelegramUserId) > 1);
@@ -114,6 +116,8 @@ namespace CriminalDanceBot
                 }
                 while (true);
 
+                if (this.Phase == GamePhase.Ending)
+                    return;
                 if (this.Players.Count() >= 3)
                     this.Phase = GamePhase.InGame;
                 if (this.Phase != GamePhase.InGame)
