@@ -190,6 +190,8 @@ namespace CriminalDanceBot
                         _playerList = Send(GeneratePlayerList()).MessageId;
                         while (NowAction != GameAction.Next)
                         {
+                            if (Phase == GamePhase.Ending) return;
+
                             switch (NowAction)
                             {
                                 case GameAction.NormalCard:
@@ -278,6 +280,7 @@ namespace CriminalDanceBot
         {
             try
             {
+                if (Phase == GamePhase.Ending) return;
                 var p = PlayerQueue.First();
                 p.CardChoice1 = null;
                 if (p.ReAnswer != true)
@@ -288,6 +291,8 @@ namespace CriminalDanceBot
                     if (p.CurrentQuestion == null)
                         break;
                 }
+                if (Phase == GamePhase.Ending) return;
+
                 try
                 {
                     if (p.CurrentQuestion.MessageId != 0 && p.CardChoice1 == null)
@@ -333,6 +338,7 @@ namespace CriminalDanceBot
                     NowAction = GameAction.Next;
                     return;
                 }
+                if (Phase == GamePhase.Ending) return;
 
                 // What card?
                 switch (card.Type)
@@ -424,6 +430,8 @@ namespace CriminalDanceBot
                     if (p.CurrentQuestion == null)
                         break;
                 }
+                if (Phase == GamePhase.Ending) return;
+
                 try
                 {
                     if (p.CurrentQuestion.MessageId != 0 && p.PlayerChoice1 == 0)
@@ -455,6 +463,8 @@ namespace CriminalDanceBot
                     if (BarterPlayers.All(x => x.CurrentQuestion == null))
                         break;
                 }
+                if (Phase == GamePhase.Ending) return;
+
                 try
                 {
                     foreach (var player in BarterPlayers)
@@ -509,6 +519,8 @@ namespace CriminalDanceBot
                     if (p.CurrentQuestion == null)
                         break;
                 }
+                if (Phase == GamePhase.Ending) return;
+
                 try
                 {
                     if (p.CurrentQuestion.MessageId != 0 && p.PlayerChoice1 == 0)
@@ -564,6 +576,8 @@ namespace CriminalDanceBot
                     if (Players.All(x => x.CurrentQuestion == null))
                         break;
                 }
+                if (Phase == GamePhase.Ending) return;
+
                 try
                 {
                     foreach (var player in Players.FindAll(x => !x.UsedUp))
@@ -666,6 +680,8 @@ namespace CriminalDanceBot
                         if (p.CurrentQuestion == null)
                             break;
                     }
+                    if (Phase == GamePhase.Ending) return;
+
                     try
                     {
                         if (p.CurrentQuestion.MessageId != 0 && p.PlayerChoice1 == 0)
@@ -737,6 +753,8 @@ namespace CriminalDanceBot
                     if (p.CurrentQuestion == null)
                         break;
                 }
+                if (Phase == GamePhase.Ending) return;
+
                 try
                 {
                     if (p.CurrentQuestion.MessageId != 0 && p.PlayerChoice1 == 0)
@@ -1079,6 +1097,7 @@ namespace CriminalDanceBot
                         var playerChoice1 = Int32.Parse(args[3]);
                         XPlayer p2 = Players.FirstOrDefault(x => x.TelegramUserId == playerChoice1);
                         p.PlayerChoice1 = playerChoice1;
+                        isPlayer = true;
                         Bot.Edit(p.TelegramUserId, p.CurrentQuestion.MessageId, $"{GetTranslation("ReceivedButton")} - {(isPlayer == true ? Players.FirstOrDefault(x => x.TelegramUserId == p.PlayerChoice1).Name : GetName(p.Cards.FirstOrDefault(x => x.Id == p.CardChoice1)))}");
                         if (playerChoice1 != 0 && p2 != null)
                         {
@@ -1092,7 +1111,6 @@ namespace CriminalDanceBot
                             }).Start();
                         }
                         
-                        isPlayer = true;
                         p.CurrentQuestion = null;
                         return;
                     case GameAction.Barter:
