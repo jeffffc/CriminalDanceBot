@@ -237,7 +237,6 @@ namespace CriminalDanceBot
             }
 
             Bot.Gm.RemoveGame(this);
-            Bot.Send(ChatId, GetTranslation("GameEnded"));
         }
 
         public void FirstFinder()
@@ -1023,6 +1022,7 @@ namespace CriminalDanceBot
                 g.WinningTeam = WinnerType == XCardType.Culprit ? "Bad" : WinnerType == XCardType.Dog ? "Dog" : "Good";
                 db.SaveChanges();
             }
+            Bot.Send(ChatId, GetTranslation("GameEnded"));
             Phase = GamePhase.Ending;
         }
         #endregion
@@ -1096,11 +1096,11 @@ namespace CriminalDanceBot
                     case GameAction.Witness:
                         var playerChoice1 = Int32.Parse(args[3]);
                         XPlayer p2 = Players.FirstOrDefault(x => x.TelegramUserId == playerChoice1);
-                        p.PlayerChoice1 = playerChoice1;
-                        isPlayer = true;
-                        Bot.Edit(p.TelegramUserId, p.CurrentQuestion.MessageId, $"{GetTranslation("ReceivedButton")} - {(isPlayer == true ? Players.FirstOrDefault(x => x.TelegramUserId == p.PlayerChoice1).Name : GetName(p.Cards.FirstOrDefault(x => x.Id == p.CardChoice1)))}");
-                        if (playerChoice1 != 0 && p2 != null)
-                        {
+                        if (p.PlayerChoice1 != 0 && p2 != null)
+                        { 
+                            p.PlayerChoice1 = playerChoice1;
+                            isPlayer = true;
+                            Bot.Edit(p.TelegramUserId, p.CurrentQuestion.MessageId, $"{GetTranslation("ReceivedButton")} - {(isPlayer == true ? Players.FirstOrDefault(x => x.TelegramUserId == p.PlayerChoice1).Name : GetName(p.Cards.FirstOrDefault(x => x.Id == p.CardChoice1)))}");
                             var cards = GenerateOwnCard(p2, true);
                             /* BotMethods.AnswerCallback(query, cards, true); */ // change back to old send message + delete method
                             
