@@ -31,6 +31,7 @@ namespace CriminalDanceBot.Models
 
         public bool Accomplice { get; set; } = false;
         public bool UsedUp { get; set; } = false;
+        public bool Witnessing { get; set; } = false;
     }
 
     public class QuestionAsked

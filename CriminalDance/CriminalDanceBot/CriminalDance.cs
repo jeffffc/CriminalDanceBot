@@ -1108,9 +1108,15 @@ namespace CriminalDanceBot
                             /* BotMethods.AnswerCallback(query, cards, true); */ // change back to old send message + delete method
                             
                             new Task(() => {
-                                var sent = SendPM(p, cards);
-                                Thread.Sleep(Constants.WitnessTime * 1000);
-                                Bot.Api.DeleteMessageAsync(sent.Chat.Id, sent.MessageId);
+                                if (p.Witnessing != true)
+                                {
+                                    var sent = SendPM(p, cards);
+                                    p.Witnessing = true;
+                                    Thread.Sleep(Constants.WitnessTime * 1000);
+                                    Bot.Api.DeleteMessageAsync(sent.Chat.Id, sent.MessageId);
+                                    Thread.Sleep(5000);
+                                    p.Witnessing = false;
+                                }
                             }).Start();
                         }
                         
