@@ -1075,6 +1075,7 @@ namespace CriminalDanceBot
                         var playerChoice1 = Int32.Parse(args[3]);
                         XPlayer p2 = Players.FirstOrDefault(x => x.TelegramUserId == playerChoice1);
                         p.PlayerChoice1 = playerChoice1;
+                        Bot.Edit(p.TelegramUserId, p.CurrentQuestion.MessageId, $"{GetTranslation("ReceivedButton")} - {(isPlayer == true ? Players.FirstOrDefault(x => x.TelegramUserId == p.PlayerChoice1).Name : GetName(p.Cards.FirstOrDefault(x => x.Id == p.CardChoice1)))}");
                         if (playerChoice1 != 0 && p2 != null)
                         {
                             var cards = GenerateOwnCard(p2, true);
@@ -1088,7 +1089,8 @@ namespace CriminalDanceBot
                         }
                         
                         isPlayer = true;
-                        break;
+                        p.CurrentQuestion = null;
+                        return;
                     case GameAction.Barter:
                         int a;
                         if (int.TryParse(args[3], out a))
