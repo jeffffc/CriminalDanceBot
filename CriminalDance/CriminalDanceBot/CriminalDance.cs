@@ -234,6 +234,8 @@ namespace CriminalDanceBot
                     this.Phase = GamePhase.Ending;
                 }
                 this.Phase = GamePhase.Ending;
+                Bot.Send(ChatId, GetTranslation("GameEnded"));
+
             }
 
             Bot.Gm.RemoveGame(this);
@@ -780,7 +782,7 @@ namespace CriminalDanceBot
                 for (int i = 0; i < Constants.ChooseCardTime; i++)
                 {
                     Thread.Sleep(1000);
-                    if (p2.CardChoice1 != null)
+                    if (p2.CurrentQuestion == null)
                         break;
                 }
                 try
@@ -1022,7 +1024,6 @@ namespace CriminalDanceBot
                 g.WinningTeam = WinnerType == XCardType.Culprit ? "Bad" : WinnerType == XCardType.Dog ? "Dog" : "Good";
                 db.SaveChanges();
             }
-            Bot.Send(ChatId, GetTranslation("GameEnded"));
             Phase = GamePhase.Ending;
         }
         #endregion
