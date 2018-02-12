@@ -630,7 +630,23 @@ namespace CriminalDanceBot
             try
             {
                 foreach (var player in Players.FindAll(x => !x.UsedUp))
-                    player.CardChoice1 = player.Cards[Helper.RandomNum(player.Cards.Count)].Id;
+                {
+                    int numb = Helper.RandomNum(player.Cards.Count);
+                    try
+                    {
+                        player.CardChoice1 = player.Cards[numb].Id;
+                    }
+                    catch(IndexOutOfRangeException e)
+                    {
+                        Bot.Send(Constants.LogGroupId, $"Rumor: Index out of range while trying to pick random card for " +
+                            $"{player.GetName()}. He had {player.Cards.Count} cards in hand: " +
+                            $"{string.Join(", ", player.Cards.Select(x => x.Name))}. His randomly generated card index was {numb}. " +
+                            $"Game in {GroupName} ({ChatId}). Error occured at {DateTime.UtcNow.ToLongTimeString()} UTC", 
+                            parseMode: Telegram.Bot.Types.Enums.ParseMode.Default);
+
+                        throw e;
+                    }
+                }
 
 
                 var tempList = PlayerQueue.ToList().FindAll(x => !x.UsedUp);
