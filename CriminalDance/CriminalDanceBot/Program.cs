@@ -21,6 +21,7 @@ namespace CriminalDanceBot
         public static Dictionary<string, XDocument> Langs;
         public static readonly MemoryCache AdminCache = new MemoryCache("GroupAdmins");
         public static bool MaintMode = false;
+        public static DateTime Startup;
 
         static void Main(string[] args)
         {
@@ -55,6 +56,7 @@ namespace CriminalDanceBot
             Bot.Api.GetUpdatesAsync(-1).Wait();
             Handler.HandleUpdates(Bot.Api);
             Bot.Api.StartReceiving();
+            Startup = DateTime.Now;
             new Thread(UpdateConsole).Start();
             Console.ReadLine();
             Bot.Api.StopReceiving();
@@ -81,12 +83,11 @@ namespace CriminalDanceBot
 
         private static void UpdateConsole()
         {
-            DateTime dt = DateTime.Now;
             while (true)
             {
                 Console.Clear();
-                var Uptime = DateTime.Now - dt;
-                string msg = $"Startup Time: {dt.ToString()}";
+                var Uptime = DateTime.Now - Startup;
+                string msg = $"Startup Time: {Startup.ToString()}";
                 msg += Environment.NewLine + $"Uptime: {Uptime.ToString()}";
                 var games = Bot.Gm.Games;
                 int gameCount = games.Count();

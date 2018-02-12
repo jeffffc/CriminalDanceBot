@@ -231,5 +231,14 @@ namespace CriminalDanceBot
             }
 
         }
+
+        [Command(Trigger = "runinfo")]
+        public static void RunInfo(Message msg, string[] args)
+        {
+            string uptime = $"{(DateTime.Now - Program.Startup):dd\\.hh\\:mm\\:ss\\.ff}";
+            int gamecount = Bot.Gm.Games.Count;
+            int playercount = Bot.Gm.Games.Select(x => x.Players.Count).Sum();
+            Bot.Send(msg.Chat.Id, GetTranslation("runinfo", GetLanguage(msg.Chat.Id), uptime, gamecount, playercount));
+        }
     }
 }
