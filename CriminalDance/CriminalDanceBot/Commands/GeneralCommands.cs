@@ -20,8 +20,8 @@ namespace CriminalDanceBot
             var now = DateTime.UtcNow;
             var span1 = now - msg.Date.ToUniversalTime();
             var ping = msg.Reply($"Time to receive: {span1.ToString("mm\\:ss\\.ff")}");
-            // var span2 = ping.Date.ToUniversalTime() - now;
-            // Bot.Edit(ping.Text + $"{Environment.NewLine}Time to send: {span2.ToString("mm\\:ss\\.ff")}", ping);
+            var span2 = ping.Date.ToUniversalTime() - now;
+            Bot.Edit(ping.Chat.Id, ping.MessageId, ping.Text + $"{Environment.NewLine}Time to send: {span2.ToString("mm\\:ss\\.ff")}");
 
         }
 
