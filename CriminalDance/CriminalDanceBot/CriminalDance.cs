@@ -1025,6 +1025,8 @@ namespace CriminalDanceBot
             }
             Send(msg);
 
+            var finalMsg = GenerateFinalMsg();
+            Send(finalMsg);
             // db
             using (var db = new CrimDanceDb())
             {
@@ -1303,6 +1305,30 @@ namespace CriminalDanceBot
                 m += $"{i + 1}. {GetName(p.Cards[i])}\n";
             }
             return m;
+        }
+
+        public string GenerateFinalMsg()
+        {
+            var msg = "";
+            foreach (XPlayer p in PlayerQueue)
+            {
+                var w = p.Won == true ? GetTranslation("Won") : GetTranslation("Lost");
+                if (p.Accomplice)
+                    msg += GetTranslation("FinalMessageWithRole", p.GetName(), GetTranslation("Accomplice"), w);
+                else if (Culprit == p)
+                    msg += GetTranslation("FinalMessageWithRole", p.GetName(), GetTranslation("Culprit"), w);
+                else if (WinnerType == XCardType.Dog && Winner == p)
+                    msg += GetTranslation("FinalMessageWithRole", p.GetName(), GetTranslation("Dog"), w);
+                else if (WinnerType == XCardType.Detective && Winner == p)
+                    msg += GetTranslation("FinalMessageWithRole", p.GetName(), GetTranslation("Detective"), w);
+                else
+                    msg += GetTranslation("FinalMessage", p.GetName(), w);
+                msg += Environment.NewLine;
+                if (p.Cards.Count > 0)
+                    msg += $">>> {p.Cards.Select(x => GetName(x)).Aggregate((x, y) => x + ", " + y)}";
+                msg += Environment.NewLine;
+            }
+            return msg;
         }
 
         public void NotifyNextGamePlayers()
