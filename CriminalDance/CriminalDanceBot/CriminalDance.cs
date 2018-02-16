@@ -614,7 +614,14 @@ namespace CriminalDanceBot
                     var card = p.Cards.FirstOrDefault(x => x.Id == p.CardChoice1);
                     p.Cards.Remove(card);
                     next.Cards.Add(card);
+                    p.ToBeSent.Add(GetTranslation("RumorGive", GetName(card), GetName(next)));
+                    next.ToBeSent.Add(GetTranslation("RumorReceive", GetName(card), GetName(p)));
                     p.CardChanged = true;
+                }
+                foreach (var p in tempList)
+                {
+                    SendPM(p, p.ToBeSent.Aggregate((x, y) => x + Environment.NewLine + y));
+                    p.ToBeSent.Clear();
                 }
                 Send(GetTranslation("InfoExchangeCompleted"));
                 NowAction = GameAction.Next;
