@@ -112,11 +112,6 @@ namespace CriminalDanceBot
             }
             catch (Exception e)
             {
-                if (e.Message.Contains("initiate conversation"))
-                {
-                    m.Reply(CriminalDanceBot.Commands.GetTranslation("NotStartedBot", CriminalDanceBot.Commands.GetLanguage(m.From.Id)), CriminalDanceBot.Commands.GenerateStartMe(m.From.Id));
-                    return null;
-                }
                 e.LogError();
                 return null;
             }

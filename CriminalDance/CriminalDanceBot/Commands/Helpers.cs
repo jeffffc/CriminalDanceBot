@@ -50,7 +50,7 @@ namespace CriminalDanceBot
             }
         }
 
-        public static string GetTranslation(string key, string language, params object[] args)
+        private static string GetTranslation(string key, string language, params object[] args)
         {
             try
             {
@@ -96,7 +96,7 @@ namespace CriminalDanceBot
             }
         }
 
-        public static string GetTranslation(string key, XDocument file)
+        private static string GetTranslation(string key, XDocument file)
         {
             var strings = file.Descendants("string").FirstOrDefault(x => x.Attribute("key").Value == key);
             var values = strings.Descendants("value");
