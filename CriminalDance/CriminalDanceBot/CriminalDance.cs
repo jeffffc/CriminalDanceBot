@@ -1139,16 +1139,10 @@ namespace CriminalDanceBot
                                     var sent = SendPM(p, cards);
                                     p.Witnessing = true;
                                     Thread.Sleep(Constants.WitnessTime * 1000);
-                                    try {
-                                        Bot.Api.DeleteMessageAsync(sent.Chat.Id, sent.MessageId);
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        e.LogError();
-                                    }
+                                    Bot.Api.DeleteMessageAsync(sent.Chat.Id, sent.MessageId);
                                     Thread.Sleep(5000);
                                     p.Witnessing = false;
-                                    }
+                                }
                             }).Start();
                         }
                         
