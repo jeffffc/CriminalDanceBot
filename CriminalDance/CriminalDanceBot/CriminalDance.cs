@@ -1319,12 +1319,12 @@ namespace CriminalDanceBot
             foreach (XPlayer p in PlayerQueue)
             {
                 var w = p.Won == true ? GetTranslation("Won") : GetTranslation("Lost");
-                if (p.Accomplice)
+                if (WinnerType == XCardType.Dog && Winner == p)
+                    msg += GetTranslation("FinalMessageWithRole", p.GetName(), GetTranslation("Dog"), w);
+                else if (p.Accomplice)
                     msg += GetTranslation("FinalMessageWithRole", p.GetName(), GetTranslation("Accomplice"), w);
                 else if (Culprit == p)
                     msg += GetTranslation("FinalMessageWithRole", p.GetName(), GetTranslation("Culprit"), w);
-                else if (WinnerType == XCardType.Dog && Winner == p)
-                    msg += GetTranslation("FinalMessageWithRole", p.GetName(), GetTranslation("Dog"), w);
                 else if (WinnerType == XCardType.Detective && Winner == p)
                     msg += GetTranslation("FinalMessageWithRole", p.GetName(), GetTranslation("Detective"), w);
                 else
