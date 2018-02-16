@@ -1316,9 +1316,9 @@ namespace CriminalDanceBot
         public string GenerateFinalMsg()
         {
             var msg = "";
-            foreach (XPlayer p in PlayerQueue)
+            foreach (XPlayer p in PlayerQueue.Where(x => x.Won == true))
             {
-                var w = p.Won == true ? GetTranslation("Won") : GetTranslation("Lost");
+                var w = p.Won == true ? GetTranslation("Won").ToBold() : GetTranslation("Lost").ToBold();
                 if (WinnerType == XCardType.Dog && Winner == p)
                     msg += GetTranslation("FinalMessageWithRole", p.GetName(), GetTranslation("Dog"), w);
                 else if (p.Accomplice)
@@ -1330,8 +1330,34 @@ namespace CriminalDanceBot
                 else
                     msg += GetTranslation("FinalMessage", p.GetName(), w);
                 msg += Environment.NewLine;
-                if (p.Cards.Count > 0)
-                    msg += $">>> {p.Cards.Select(x => GetName(x)).Aggregate((x, y) => x + ", " + y)}";
+            }
+            foreach (XPlayer p in PlayerQueue.Where(x => x.Won != true))
+            {
+                var w = p.Won == true ? GetTranslation("Won").ToBold() : GetTranslation("Lost").ToBold();
+                if (WinnerType == XCardType.Dog && Winner == p)
+                    msg += GetTranslation("FinalMessageWithRole", p.GetName(), GetTranslation("Dog"), w);
+                else if (p.Accomplice)
+                    msg += GetTranslation("FinalMessageWithRole", p.GetName(), GetTranslation("Accomplice"), w);
+                else if (Culprit == p)
+                    msg += GetTranslation("FinalMessageWithRole", p.GetName(), GetTranslation("Culprit"), w);
+                else if (WinnerType == XCardType.Detective && Winner == p)
+                    msg += GetTranslation("FinalMessageWithRole", p.GetName(), GetTranslation("Detective"), w);
+                else
+                    msg += GetTranslation("FinalMessage", p.GetName(), w);
+                msg += Environment.NewLine;
+            }
+            msg += Environment.NewLine;
+            var PlayersWithCards = PlayerQueue.Where(x => x.Cards.Count > 0);
+            if (PlayersWithCards.Count() <= 0)
+                return msg;
+            msg += Environment.NewLine;
+            msg += GetTranslation("CardsLeft");
+            msg += Environment.NewLine;
+            foreach (XPlayer p in PlayersWithCards)
+            {
+                msg += p.GetName();
+                msg += Environment.NewLine;
+                msg += $">>> {p.Cards.Select(x => GetName(x)).Aggregate((x, y) => x + ", " + y)}";
                 msg += Environment.NewLine;
             }
             return msg;
