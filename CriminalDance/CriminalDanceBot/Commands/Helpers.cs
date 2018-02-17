@@ -16,37 +16,42 @@ namespace CriminalDanceBot
 {
     public partial class Commands
     {
+        /// <summary>
+        /// Get the language for a chat. May be used for both players and groups
+        /// </summary>
         public static string GetLanguage(long id)
         {
-            using (var db = new CrimDanceDb())
+            if (id < 0)
             {
-                Player p = null;
-                var grp = db.Groups.FirstOrDefault(x => x.GroupId == id);
-                if (grp == null)
-                    p = db.Players.FirstOrDefault(x => x.TelegramId == id);
-                if (p != null && String.IsNullOrEmpty(p.Language))
+                using (var db = new CrimDanceDb())
                 {
-                    p.Language = "English";
-                    db.SaveChanges();
+                    Player p = null;
+                    var grp = db.Groups.FirstOrDefault(x => x.GroupId == id);
+                    if (grp == null)
+                        p = db.Players.FirstOrDefault(x => x.TelegramId == id);
+                    if (p != null && String.IsNullOrEmpty(p.Language))
+                    {
+                        p.Language = "English";
+                        db.SaveChanges();
+                    }
+                    return grp?.Language ?? p?.Language ?? "English";
                 }
-                return grp?.Language ?? p?.Language ?? "English";
             }
-        }
-
-        public static string GetLanguage(int id)
-        {
-            using (var db = new CrimDanceDb())
+            else
             {
-                Player p = null;
-                var grp = db.Groups.FirstOrDefault(x => x.GroupId == id);
-                if (grp == null)
-                    p = db.Players.FirstOrDefault(x => x.TelegramId == id);
-                if (p != null && String.IsNullOrEmpty(p.Language))
+                using (var db = new CrimDanceDb())
                 {
-                    p.Language = "English";
-                    db.SaveChanges();
+                    Player p = null;
+                    var grp = db.Groups.FirstOrDefault(x => x.GroupId == id);
+                    if (grp == null)
+                        p = db.Players.FirstOrDefault(x => x.TelegramId == id);
+                    if (p != null && String.IsNullOrEmpty(p.Language))
+                    {
+                        p.Language = "English";
+                        db.SaveChanges();
+                    }
+                    return grp?.Language ?? p?.Language ?? "English";
                 }
-                return grp?.Language ?? p?.Language ?? "English";
             }
         }
 
