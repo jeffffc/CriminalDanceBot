@@ -21,37 +21,18 @@ namespace CriminalDanceBot
         /// </summary>
         public static string GetLanguage(long id)
         {
-            if (id < 0)
+            using (var db = new CrimDanceDb())
             {
-                using (var db = new CrimDanceDb())
+                Player p = null;
+                var grp = db.Groups.FirstOrDefault(x => x.GroupId == id);
+                if (grp == null)
+                    p = db.Players.FirstOrDefault(x => x.TelegramId == id);
+                if (p != null && String.IsNullOrEmpty(p.Language))
                 {
-                    Player p = null;
-                    var grp = db.Groups.FirstOrDefault(x => x.GroupId == id);
-                    if (grp == null)
-                        p = db.Players.FirstOrDefault(x => x.TelegramId == id);
-                    if (p != null && String.IsNullOrEmpty(p.Language))
-                    {
-                        p.Language = "English";
-                        db.SaveChanges();
-                    }
-                    return grp?.Language ?? p?.Language ?? "English";
+                    p.Language = "English";
+                    db.SaveChanges();
                 }
-            }
-            else
-            {
-                using (var db = new CrimDanceDb())
-                {
-                    Player p = null;
-                    var grp = db.Groups.FirstOrDefault(x => x.GroupId == id);
-                    if (grp == null)
-                        p = db.Players.FirstOrDefault(x => x.TelegramId == id);
-                    if (p != null && String.IsNullOrEmpty(p.Language))
-                    {
-                        p.Language = "English";
-                        db.SaveChanges();
-                    }
-                    return grp?.Language ?? p?.Language ?? "English";
-                }
+                return grp?.Language ?? p?.Language ?? "English";
             }
         }
 
@@ -357,7 +338,7 @@ namespace CriminalDanceBot
 
             System.IO.File.Copy(newFilePath, copyToPath, true);
             msg += "File copied to bot\n";
-            
+
             msg += "\n<b>Operation complete.</b>";
 
             Bot.Api.EditMessageTextAsync(id, msgId, msg, parseMode: ParseMode.Html);
