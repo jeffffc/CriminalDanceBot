@@ -121,6 +121,7 @@ namespace CriminalDanceBot
 
                 if (this.Phase == GamePhase.Ending)
                     return;
+
                 if (this.Players.Count() >= 3)
                     this.Phase = GamePhase.InGame;
                 if (this.Phase != GamePhase.InGame)
