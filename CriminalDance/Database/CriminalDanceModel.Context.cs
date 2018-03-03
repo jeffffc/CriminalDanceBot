@@ -12,6 +12,8 @@ namespace Database
     using System;
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
+    using System.Data.Entity.Core.Objects;
+    using System.Linq;
     
     public partial class CrimDanceDb : DbContext
     {
@@ -32,5 +34,23 @@ namespace Database
         public virtual DbSet<Player> Players { get; set; }
         public virtual DbSet<Donation> Donations { get; set; }
         public virtual DbSet<GamePlayer> GamePlayers { get; set; }
+    
+        public virtual ObjectResult<Nullable<int>> GetNumOfWins(Nullable<int> playerId)
+        {
+            var playerIdParameter = playerId.HasValue ?
+                new ObjectParameter("playerId", playerId) :
+                new ObjectParameter("playerId", typeof(int));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<Nullable<int>>("GetNumOfWins", playerIdParameter);
+        }
+    
+        public virtual ObjectResult<Nullable<int>> GetPlayerNumOfGames(Nullable<int> playerId)
+        {
+            var playerIdParameter = playerId.HasValue ?
+                new ObjectParameter("playerId", playerId) :
+                new ObjectParameter("playerId", typeof(int));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<Nullable<int>>("GetPlayerNumOfGames", playerIdParameter);
+        }
     }
 }

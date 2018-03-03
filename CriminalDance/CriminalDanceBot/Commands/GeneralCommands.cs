@@ -240,5 +240,23 @@ namespace CriminalDanceBot
             int playercount = Bot.Gm.Games.Select(x => x.Players.Count).Sum();
             Bot.Send(msg.Chat.Id, GetTranslation("Runinfo", GetLanguage(msg.Chat.Id), uptime, gamecount, playercount));
         }
+
+        [Command(Trigger = "stats")]
+        public static void Stats(Message msg, string[] args)
+        {
+            using (var db = new CrimDanceDb())
+            {
+                var playerId = msg.From.Id;
+                if (!db.GamePlayers.Any(x => x.Player.TelegramId == playerId))
+                {
+                    msg.Reply(GetTranslation("StatsHaveNotPlayed", GetLanguage(playerId)));
+                    return;
+                }
+                int numOfWins = db.GetNumOfWins(playerId).First().Value;
+                var numOfGames = db.GetPlayerNumOfGames(playerId).First().Value;
+                var send = GetTranslation("StatsDetails", GetLanguage(playerId), numOfWins, numOfGames, (int)(numOfWins * 100 / numOfGames));
+                msg.Reply(send);
+            }
+        }
     }
 }

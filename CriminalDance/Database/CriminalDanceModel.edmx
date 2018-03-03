@@ -117,6 +117,12 @@ warning 6002: The table/view 'criminaldance.dbo.NotifyGame' does not have a prim
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Function Name="GetNumOfWins" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="playerId" Type="int" Mode="In" />
+        </Function>
+        <Function Name="GetPlayerNumOfGames" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="playerId" Type="int" Mode="In" />
+        </Function>
         <EntityContainer Name="CriminalDanceModelStoreContainer">
           <EntitySet Name="Admin" EntityType="Self.Admin" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Donation" EntityType="Self.Donation" Schema="dbo" store:Type="Tables" />
@@ -173,6 +179,12 @@ warning 6002: The table/view 'criminaldance.dbo.NotifyGame' does not have a prim
             <End Role="Player" EntitySet="Players" />
             <End Role="GamePlayer" EntitySet="GamePlayers" />
           </AssociationSet>
+          <FunctionImport Name="GetNumOfWins" ReturnType="Collection(Int32)">
+            <Parameter Name="playerId" Mode="In" Type="Int32" />
+          </FunctionImport>
+          <FunctionImport Name="GetPlayerNumOfGames" ReturnType="Collection(Int32)">
+            <Parameter Name="playerId" Mode="In" Type="Int32" />
+          </FunctionImport>
         </EntityContainer>
         <EntityType Name="NotifyGame">
           <Key>
@@ -370,6 +382,8 @@ warning 6002: The table/view 'criminaldance.dbo.NotifyGame' does not have a prim
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
+          <FunctionImportMapping FunctionImportName="GetNumOfWins" FunctionName="CriminalDanceModel.Store.GetNumOfWins" />
+          <FunctionImportMapping FunctionImportName="GetPlayerNumOfGames" FunctionName="CriminalDanceModel.Store.GetPlayerNumOfGames" />
         </EntityContainerMapping>
       </Mapping>
     </edmx:Mappings>
