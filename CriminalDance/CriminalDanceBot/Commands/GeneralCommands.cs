@@ -246,7 +246,7 @@ namespace CriminalDanceBot
         {
             using (var db = new CrimDanceDb())
             {
-                var playerId = msg.From.Id;
+                var playerId = msg.ReplyToMessage?.From.Id ?? msg.From.Id;
                 if (!db.GamePlayers.Any(x => x.Player.TelegramId == playerId))
                 {
                     msg.Reply(GetTranslation("StatsHaveNotPlayed", GetLanguage(playerId)));
