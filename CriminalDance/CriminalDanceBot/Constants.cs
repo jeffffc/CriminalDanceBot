@@ -16,7 +16,7 @@ namespace CriminalDanceBot
         {
             return _key.GetValue(key, "").ToString();
         }
-        # log path
+        // log path
         private static string _logPath = @"C:\Logs\MyTelegramBot.log";
         public static string GetLogPath()
         {
