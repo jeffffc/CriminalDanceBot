@@ -260,7 +260,8 @@ namespace CriminalDanceBot
                 var isGroup = !(msg.Chat.Type == ChatType.Private);
                 var player = msg.ReplyToMessage?.From ?? msg.From;
                 var playerId = player.Id;
-                var achv = (Achievements)db.Players.FirstOrDefault(x => x.TelegramId == playerId).Achievements;
+                var temp = db.Players.FirstOrDefault(x => x.TelegramId == playerId).Achievements ?? 0;
+                var achv = (Achievements)temp;
                 var achvCount = achv.GetUniqueFlags().Count();
                 if (!db.GamePlayers.Any(x => x.Player.TelegramId == playerId))
                 {
@@ -268,17 +269,16 @@ namespace CriminalDanceBot
                     return;
                 }
                 var playerName = $"{player.GetName()} (<code>{playerId}</code>)";
-                var numOfAchvs = 0;
                 int numOfWins = db.GetNumOfWins(playerId).First().Value;
                 var numOfGames = db.GetPlayerNumOfGames(playerId).First().Value;
                 var numOfCrimWins = db.getCrimWinTimes(playerId).First().Value;
                 var numOfDogWins = db.getDogWinTimes(playerId).First().Value;
                 var send = GetTranslation("StatsDetails", GetLanguage(isGroup == true ? msg.Chat.Id : playerId), 
                     playerName,
-                    numOfAchvs.ToBold(),
+                    achvCount.ToBold(),
                     numOfGames.ToBold(),
                     $"{numOfWins} ({Math.Round((double)numOfWins * 100 / numOfGames, 0)}%)".ToBold(),
-                    $"{numOfGames - numOfWins} ({Math.Round((double)(numOfGames - numOfWins) * 100 / numOfGames, 0)})".ToBold(),
+                    $"{numOfGames - numOfWins} ({Math.Round((double)(numOfGames - numOfWins) * 100 / numOfGames, 0)}%)".ToBold(),
                     numOfCrimWins.ToBold(),
                     numOfDogWins.ToBold()
                     );
