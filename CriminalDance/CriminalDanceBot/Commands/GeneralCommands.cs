@@ -9,11 +9,22 @@ using Database;
 using CriminalDanceBot.Handlers;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.Payments;
+using CriminalDanceBot.Models;
 
 namespace CriminalDanceBot
 {
     public partial class Commands
     {
+        [Command(Trigger = "start")]
+        public static void Start(Message msg, string[] args)
+        {
+            if (msg.Chat.Type != ChatType.Private) return;
+            if (args.Length == 0)
+            {
+                msg.Reply("Thank you for starting me. This bot is still in BETA phase. Please find updates at @CriminalDance.");
+            }
+        }
+
         [Command(Trigger = "ping")]
         public static void Ping(Message msg, string[] args)
         {
@@ -246,16 +257,51 @@ namespace CriminalDanceBot
         {
             using (var db = new CrimDanceDb())
             {
-                var playerId = msg.ReplyToMessage?.From.Id ?? msg.From.Id;
+                var isGroup = !(msg.Chat.Type == ChatType.Private);
+                var player = msg.ReplyToMessage?.From ?? msg.From;
+                var playerId = player.Id;
+                var achv = (Achievements)db.Players.FirstOrDefault(x => x.TelegramId == playerId).Achievements;
+                var achvCount = achv.GetUniqueFlags().Count();
                 if (!db.GamePlayers.Any(x => x.Player.TelegramId == playerId))
                 {
                     msg.Reply(GetTranslation("StatsHaveNotPlayed", GetLanguage(playerId)));
                     return;
                 }
+                var playerName = $"{player.GetName()} (<code>{playerId}</code>)";
+                var numOfAchvs = 0;
                 int numOfWins = db.GetNumOfWins(playerId).First().Value;
                 var numOfGames = db.GetPlayerNumOfGames(playerId).First().Value;
-                var send = GetTranslation("StatsDetails", GetLanguage(playerId), numOfWins, numOfGames, (int)(numOfWins * 100 / numOfGames));
+                var numOfCrimWins = db.getCrimWinTimes(playerId).First().Value;
+                var numOfDogWins = db.getDogWinTimes(playerId).First().Value;
+                var send = GetTranslation("StatsDetails", GetLanguage(isGroup == true ? msg.Chat.Id : playerId), 
+                    playerName,
+                    numOfAchvs.ToBold(),
+                    numOfGames.ToBold(),
+                    $"{numOfWins} ({Math.Round((double)numOfWins * 100 / numOfGames, 0)}%)".ToBold(),
+                    $"{numOfGames - numOfWins} ({Math.Round((double)(numOfGames - numOfWins) * 100 / numOfGames, 0)})".ToBold(),
+                    numOfCrimWins.ToBold(),
+                    numOfDogWins.ToBold()
+                    );
                 msg.Reply(send);
+            }
+        }
+
+        [Command(Trigger = "achievements")]
+        public static void Achievements(Message msg, string[] args)
+        {
+            using (var db = new CrimDanceDb())
+            {
+                var p = db.Players.FirstOrDefault(x => x.TelegramId == msg.From.Id);
+                var temp = p.Achievements ?? 0;
+                var achv = (Achievements)temp;
+                var lang = GetLanguage(msg.From.Id);
+                var achvList = achv.GetUniqueFlags().ToList();
+                var msg1 = $"{GetTranslation("AchievementsGot", lang, achvList.Count)}\n\n";
+                msg1 = achvList.Aggregate(msg1, (current, a) => current + $"{a.GetAchvName(lang).ToBold()}\n{a.GetAchvDescription(lang)}\n\n");
+                var noAchvList = achv.GetUniqueFlags(true).ToList();
+                var msg2 = $"{GetTranslation("AchievementsLack", lang, noAchvList.Count)}\n\n";
+                msg2 = noAchvList.Aggregate(msg2, (current, a) => current + $"{a.GetAchvName(lang).ToBold()}\n{a.GetAchvDescription(lang)}\n\n");
+                msg.ReplyPM(new[] { msg1, msg2 });
             }
         }
     }

@@ -117,6 +117,12 @@ warning 6002: The table/view 'criminaldance.dbo.NotifyGame' does not have a prim
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Function Name="getCrimWinTimes" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="telegramId" Type="int" Mode="In" />
+        </Function>
+        <Function Name="getDogWinTimes" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="telegramId" Type="int" Mode="In" />
+        </Function>
         <Function Name="GetNumOfWins" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
           <Parameter Name="playerId" Type="int" Mode="In" />
         </Function>
@@ -180,10 +186,16 @@ warning 6002: The table/view 'criminaldance.dbo.NotifyGame' does not have a prim
             <End Role="GamePlayer" EntitySet="GamePlayers" />
           </AssociationSet>
           <FunctionImport Name="GetNumOfWins" ReturnType="Collection(Int32)">
-            <Parameter Name="playerId" Mode="In" Type="Int32" />
+          <Parameter Name="playerId" Mode="In" Type="Int32" />
           </FunctionImport>
           <FunctionImport Name="GetPlayerNumOfGames" ReturnType="Collection(Int32)">
-            <Parameter Name="playerId" Mode="In" Type="Int32" />
+          <Parameter Name="playerId" Mode="In" Type="Int32" />
+          </FunctionImport>
+          <FunctionImport Name="getCrimWinTimes" ReturnType="Collection(Int32)">
+            <Parameter Name="telegramId" Mode="In" Type="Int32" />
+          </FunctionImport>
+          <FunctionImport Name="getDogWinTimes" ReturnType="Collection(Int32)">
+            <Parameter Name="telegramId" Mode="In" Type="Int32" />
           </FunctionImport>
         </EntityContainer>
         <EntityType Name="NotifyGame">
@@ -384,6 +396,8 @@ warning 6002: The table/view 'criminaldance.dbo.NotifyGame' does not have a prim
           </EntitySetMapping>
           <FunctionImportMapping FunctionImportName="GetNumOfWins" FunctionName="CriminalDanceModel.Store.GetNumOfWins" />
           <FunctionImportMapping FunctionImportName="GetPlayerNumOfGames" FunctionName="CriminalDanceModel.Store.GetPlayerNumOfGames" />
+          <FunctionImportMapping FunctionImportName="getCrimWinTimes" FunctionName="CriminalDanceModel.Store.getCrimWinTimes" />
+          <FunctionImportMapping FunctionImportName="getDogWinTimes" FunctionName="CriminalDanceModel.Store.getDogWinTimes" />
         </EntityContainerMapping>
       </Mapping>
     </edmx:Mappings>

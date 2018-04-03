@@ -34,7 +34,7 @@ namespace CriminalDanceBot
         public static int JoinTime = 120;
         public static int JoinTimeMax = 300;
 #if DEBUG
-        public static int ChooseCardTime = 100;
+        public static int ChooseCardTime = 60;
 #else
         public static int ChooseCardTime = 45;
 #endif

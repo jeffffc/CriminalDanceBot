@@ -134,16 +134,41 @@ namespace CriminalDanceBot
                 var r = Bot.Api.SendTextMessageAsync(m.From.Id, text, parseMode, disableWebPagePreview, disableNotification, 0, replyMarkup).Result;
                 if (r == null)
                 {
-                    return m.Reply("Please `/start` me in private first!", new InlineKeyboardMarkup(new InlineKeyboardButton[] {
+                    return m.Reply(Commands.GetTranslation("NotStartedBot", Commands.GetLanguage(m.From.Id)), new InlineKeyboardMarkup(new InlineKeyboardButton[] {
                         new InlineKeyboardUrlButton("Start me!", $"https://t.me/{Bot.Me.Username}") }));
                 }
-                return m.Reply("I have sent you a PM");
+                if (m.Chat.Type != ChatType.Private)
+                    m.Reply(Commands.GetTranslation("SentPM", Commands.GetLanguage(m.From.Id)));
+                return r;
             }
             catch (Exception e)
             {
                 e.LogError();
                 return null;
             }
+        }
+
+        public static void ReplyPM(this Message m, string[] texts, IReplyMarkup replyMarkup = null, ParseMode parseMode = ParseMode.Html, bool disableWebPagePreview = true, bool disableNotification = false)
+        {
+            foreach (var text in texts)
+            {
+                try
+                {
+                    var r = Bot.Api.SendTextMessageAsync(m.From.Id, text, parseMode, disableWebPagePreview, disableNotification, 0, replyMarkup).Result;
+                    if (r == null)
+                    {
+                        m.Reply(Commands.GetTranslation("NotStartedBot", Commands.GetLanguage(m.From.Id)), new InlineKeyboardMarkup(new InlineKeyboardButton[] {
+                            new InlineKeyboardUrlButton("Start me!", $"https://t.me/{Bot.Me.Username}") }));
+                        return;
+                    }
+                }
+                catch (Exception e)
+                {
+                    e.LogError();
+                }
+            }
+            if (m.Chat.Type != ChatType.Private)
+                m.Reply(Commands.GetTranslation("SentPM", Commands.GetLanguage(m.From.Id)));
         }
 
         public static Message Edit(long chatId, int oldMessageId, string text, IReplyMarkup replyMarkup = null, ParseMode parseMode = ParseMode.Html, bool disableWebPagePreview = true, bool disableNotification = false)

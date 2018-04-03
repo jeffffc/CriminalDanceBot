@@ -93,6 +93,7 @@
     <Compile Include="Handlers\MainHandler.cs" />
     <Compile Include="Handlers\MessageHandler.cs" />
     <Compile Include="Helper.cs" />
+    <Compile Include="Models\Achievement.cs" />
     <Compile Include="Models\Command.cs" />
     <Compile Include="Models\GroupAdmin.cs" />
     <Compile Include="Models\Locale.cs" />

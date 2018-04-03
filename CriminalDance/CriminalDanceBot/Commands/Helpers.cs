@@ -36,7 +36,7 @@ namespace CriminalDanceBot
             }
         }
 
-        private static string GetTranslation(string key, string language, params object[] args)
+        public static string GetTranslation(string key, string language, params object[] args)
         {
             try
             {

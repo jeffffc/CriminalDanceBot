@@ -52,5 +52,23 @@ namespace Database
     
             return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<Nullable<int>>("GetPlayerNumOfGames", playerIdParameter);
         }
+    
+        public virtual ObjectResult<Nullable<int>> getCrimWinTimes(Nullable<int> telegramId)
+        {
+            var telegramIdParameter = telegramId.HasValue ?
+                new ObjectParameter("telegramId", telegramId) :
+                new ObjectParameter("telegramId", typeof(int));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<Nullable<int>>("getCrimWinTimes", telegramIdParameter);
+        }
+    
+        public virtual ObjectResult<Nullable<int>> getDogWinTimes(Nullable<int> telegramId)
+        {
+            var telegramIdParameter = telegramId.HasValue ?
+                new ObjectParameter("telegramId", telegramId) :
+                new ObjectParameter("telegramId", typeof(int));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<Nullable<int>>("getDogWinTimes", telegramIdParameter);
+        }
     }
 }

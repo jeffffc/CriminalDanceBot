@@ -311,9 +311,11 @@ namespace CriminalDanceBot
                 }
 
                 var cardchoice = p.CardChoice1;
-                var afkCulprit = false;
+                /* // make afk people use card instead of dump card
+                // var afkCulprit = false;
                 if (cardchoice == null)
                 {
+                    
                     afkCulprit = DumpCard(p);
                     if (afkCulprit != true)
                         NowAction = GameAction.Next;
@@ -325,7 +327,21 @@ namespace CriminalDanceBot
                     }
                     return;
                 }
-                var card = p.Cards.FirstOrDefault(x => x.Id == cardchoice);
+                */
+                XCard card = null;
+                if (cardchoice != null)
+                    card = p.Cards.FirstOrDefault(x => x.Id == cardchoice);
+                else
+                {
+                    List<XCard> tempCards;
+                    if (p.Cards.Count > 1)
+                    {
+                        tempCards = p.Cards.FindAll(x => x.Type != XCardType.Culprit);
+                        card = tempCards[Helper.RandomNum(tempCards.Count)];
+                    }
+                    else // it maybe culprit last card
+                        card = p.Cards[0];
+                }
                 p.CurrentQuestion = null;
 
                 if (card == null)
@@ -804,26 +820,30 @@ namespace CriminalDanceBot
                 }
 
                 p2.CardChoice1 = null;
-                SendMenu(p2, GetTranslation("DogThrowCard"), GenerateMenu(p2, p2.Cards, GameAction.Dog), QuestionType.Card);
+                if (p2.Cards.Count <= 1)
+                {
+                    SendMenu(p2, GetTranslation("DogThrowCard"), GenerateMenu(p2, p2.Cards, GameAction.Dog), QuestionType.Card);
 
-                for (int i = 0; i < Constants.ChooseCardTime; i++)
-                {
-                    Thread.Sleep(1000);
-                    if (p2.CurrentQuestion == null)
-                        break;
-                }
-                try
-                {
-                    if (p2.CurrentQuestion.MessageId != 0 && p2.CardChoice1 == null)
+                    for (int i = 0; i < Constants.ChooseCardTime; i++)
                     {
-                        SendTimesUp(p2, p2.CurrentQuestion.MessageId);
+                        Thread.Sleep(1000);
+                        if (p2.CurrentQuestion == null)
+                            break;
+                    }
+                    try
+                    {
+                        if (p2.CurrentQuestion.MessageId != 0 && p2.CardChoice1 == null)
+                        {
+                            SendTimesUp(p2, p2.CurrentQuestion.MessageId);
+                        }
+                    }
+                    catch
+                    {
+                        //
                     }
                 }
-                catch
-                {
-                    //
-                }
-
+                else
+                    p2.CardChoice1 = p2.Cards[0].Id;
                 if (p2.CardChoice1 == null)
                 {
                     p2.CardChoice1 = p2.Cards[Helper.RandomNum(p2.Cards.Count)].Id;
@@ -1049,9 +1069,46 @@ namespace CriminalDanceBot
                 }
                 db.SaveChanges();
                 var g = db.Games.FirstOrDefault(x => x.Id == GameId);
-                g.TimeEnded = DateTime.Now;
+                g.TimeEnded = DateTime.UtcNow;
                 g.WinningTeam = WinnerType == XCardType.Culprit ? "Bad" : WinnerType == XCardType.Dog ? "Dog" : "Good";
                 db.SaveChanges();
+
+                // achvs
+                foreach (var p in Players)
+                {
+                    Achievements newAchv = Achievements.None;
+                    var dbp = db.Players.FirstOrDefault(x => x.TelegramId == p.TelegramUserId);
+                    if (dbp.Achievements == null)
+                        dbp.Achievements = 0;
+                    var achv = (Achievements)dbp.Achievements;
+
+                    // check achv criteria
+                    if (!achv.HasFlag(Achievements.LetsDance)) // must get play one game achv
+                        newAchv = newAchv | Achievements.LetsDance;
+                    if (!achv.HasFlag(Achievements.AfterParty) && p.Won == true)
+                        newAchv = newAchv | Achievements.AfterParty;
+                    if (!achv.HasFlag(Achievements.OfficiallyCulprit) && WinnerType == XCardType.Culprit && Winner == p && p.Won == true)
+                        newAchv = newAchv | Achievements.OfficiallyCulprit;
+                    if (!achv.HasFlag(Achievements.YouBastard) && WinnerType == XCardType.Dog && Winner == p && p.Won == true)
+                        newAchv = newAchv | Achievements.YouBastard;
+                    if (!achv.HasFlag(Achievements.Addicted) && db.GetPlayerNumOfGames(p.TelegramUserId).First().Value >= 100)
+                        newAchv = newAchv | Achievements.Addicted;
+                    if (!achv.HasFlag(Achievements.ProDancer) && db.GetNumOfWins(p.TelegramUserId).First().Value >= 100)
+                        newAchv = newAchv | Achievements.ProDancer;
+                    if (!achv.HasFlag(Achievements.Waltz) && (g.TimeEnded - g.TimeStarted).Value.TotalMinutes >= 30)
+                        newAchv = newAchv | Achievements.Waltz;
+
+                    // now save
+                    dbp.Achievements = (long)(achv | newAchv);
+                    db.SaveChanges();
+
+                    //notify
+                    var newFlags = newAchv.GetUniqueFlags().ToList();
+                    if (newAchv == Achievements.None) continue;
+                    var achvMsg = GetTranslation("NewUnlocks").ToBold() + Environment.NewLine + Environment.NewLine;
+                    achvMsg = newFlags.Aggregate(achvMsg, (current, a) => current + $"{a.GetAchvName(Language).ToBold()}\n{a.GetAchvDescription(Language)}\n\n");
+                    SendPM(p, achvMsg);
+                }
             }
             Phase = GamePhase.Ending;
         }
