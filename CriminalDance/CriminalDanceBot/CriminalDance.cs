@@ -586,7 +586,8 @@ namespace CriminalDanceBot
         {
             try
             {
-                foreach (XPlayer player in Players.FindAll(x => !x.UsedUp))
+                var playersHaveCard = Players.FindAll(x => !x.UsedUp);
+                foreach (XPlayer player in playersHaveCard)
                 {
                     player.CardChoice1 = null;
                     SendMenu(player, GetTranslation("InfoExchangeChooseCard"), GenerateMenu(player, player.Cards, GameAction.InfoExchange), QuestionType.Card);
@@ -594,14 +595,14 @@ namespace CriminalDanceBot
                 for (int i = 0; i < Constants.ChooseCardTime; i++)
                 {
                     Thread.Sleep(1000);
-                    if (Players.All(x => x.CurrentQuestion == null))
+                    if (playersHaveCard.All(x => x.CurrentQuestion == null))
                         break;
                 }
                 if (Phase == GamePhase.Ending) return;
 
                 try
                 {
-                    foreach (var player in Players.FindAll(x => !x.UsedUp))
+                    foreach (var player in playersHaveCard)
                     {
                         if (player.CurrentQuestion.MessageId != 0 && player.CardChoice1 == null)
                         {
@@ -613,7 +614,7 @@ namespace CriminalDanceBot
                 {
                     //
                 }
-                foreach (var player in Players.FindAll(x => !x.UsedUp))
+                foreach (var player in playersHaveCard)
                 {
                     if (player.CardChoice1 == null)
                     {
@@ -656,7 +657,8 @@ namespace CriminalDanceBot
         {
             try
             {
-                foreach (var player in Players.FindAll(x => !x.UsedUp))
+                var playersHaveCard = Players.FindAll(x => !x.UsedUp);
+                foreach (var player in playersHaveCard)
                 {
                     int numb = Helper.RandomNum(player.Cards.Count);
                     try
@@ -820,7 +822,8 @@ namespace CriminalDanceBot
                 }
 
                 p2.CardChoice1 = null;
-                if (p2.Cards.Count <= 1)
+                p2.CurrentQuestion = null;
+                if (p2.Cards.Count > 1)
                 {
                     SendMenu(p2, GetTranslation("DogThrowCard"), GenerateMenu(p2, p2.Cards, GameAction.Dog), QuestionType.Card);
 
@@ -888,6 +891,7 @@ namespace CriminalDanceBot
             p.PlayerChoice2 = 0;
             p.CardChoice1 = null;
             p.CardChoice2 = null;
+            p.CurrentQuestion = null;
             PlayerQueue.Enqueue(p);
             NowAction = GameAction.NormalCard;
             foreach (var player in Players)
