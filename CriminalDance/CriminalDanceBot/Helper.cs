@@ -174,27 +174,5 @@ namespace CriminalDanceBot
                 Language = "English"
             };
         }
-
-        public static Dictionary<string, XDocument> ReadLanguageFiles()
-        {
-            var files = Directory.GetFiles(Constants.GetLangDirectory());
-            var langs = new Dictionary<string, XDocument>();
-            try
-            {
-                foreach (var file in files)
-                {
-                    var lang = Path.GetFileNameWithoutExtension(file);
-                    XDocument doc = XDocument.Load(file);
-                    langs.Add(lang, doc);
-                }
-            }
-            catch { }
-            return langs;
-        }
-
-        public static XDocument ReadEnglish()
-        {
-            return XDocument.Load(Path.Combine(Constants.GetLangDirectory(), "English.xml"));
-        }
     }
 }

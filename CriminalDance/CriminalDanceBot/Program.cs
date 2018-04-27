@@ -12,13 +12,14 @@ using System.Threading;
 using ConsoleTables;
 using System.Xml.Linq;
 using System.IO;
+using TelegramBotTranslations;
+using Telegram.Bot.Types.Enums;
 
 namespace CriminalDanceBot
 {
     class Program
     {
-        internal static XDocument English;
-        public static Dictionary<string, XDocument> Langs;
+        public static BotTranslationManager Translations;
         public static readonly MemoryCache AdminCache = new MemoryCache("GroupAdmins");
         public static bool MaintMode = false;
         public static DateTime Startup;
@@ -27,10 +28,17 @@ namespace CriminalDanceBot
         {
             AppDomain.CurrentDomain.UnhandledException += UnhandledException;
 
-            Bot.Api = new TelegramBotClient(Constants.GetBotToken("BotToken"));
+            var token = Constants.GetBotToken("BotToken");
+
+            Bot.Api = new TelegramBotClient(token);
             Bot.Me = Bot.Api.GetMeAsync().Result;
 
             Bot.Gm = new GameManager();
+
+            Translations = new BotTranslationManager(token, Constants.GetLangDirectory(false), Constants.GetLangDirectory(true), 
+                "English", ParseMode.Html, false);
+
+            token = null;
 
             Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
 
@@ -50,8 +58,6 @@ namespace CriminalDanceBot
                     
                 }
             }
-            English = Helper.ReadEnglish();
-            Langs = Helper.ReadLanguageFiles();
 
             Bot.Api.GetUpdatesAsync(-1).Wait();
             Handler.HandleUpdates(Bot.Api);

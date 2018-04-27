@@ -34,7 +34,6 @@ namespace CriminalDanceBot
 
         public Database.Game DbGame;
 
-        public Locale Locale;
         public string Language = "English";
 
         public XPlayer Winner;
@@ -49,9 +48,9 @@ namespace CriminalDanceBot
                 ChatId = chatId;
                 GroupName = groupName;
                 DbGroup = db.Groups.FirstOrDefault(x => x.GroupId == ChatId);
-                LoadLanguage(DbGroup.Language);
                 if (DbGroup == null)
                     Bot.Gm.RemoveGame(this);
+                Language = DbGroup.Language ?? "English";
             }
             // something
             #endregion
@@ -1483,73 +1482,9 @@ namespace CriminalDanceBot
         #endregion
 
         #region Language related
-        public void LoadLanguage(string language)
-        {
-            try
-            {
-                var files = Directory.GetFiles(Constants.GetLangDirectory());
-                var file = files.First(x => Path.GetFileNameWithoutExtension(x) == language);
-                {
-                    var doc = XDocument.Load(file);
-                    Locale = new Locale
-                    {
-                        Language = Path.GetFileNameWithoutExtension(file),
-                        File = doc
-                    };
-                }
-                Language = Locale.Language;
-            }
-            catch
-            {
-                if (language != "English")
-                    LoadLanguage("English");
-            }
-        }
-
         private string GetTranslation(string key, params object[] args)
         {
-            try
-            {
-                var strings = Locale.File.Descendants("string").FirstOrDefault(x => x.Attribute("key")?.Value == key) ??
-                              Program.English.Descendants("string").FirstOrDefault(x => x.Attribute("key")?.Value == key);
-                if (strings != null)
-                {
-                    var values = strings.Descendants("value");
-                    var choice = Helper.RandomNum(values.Count());
-                    var selected = values.ElementAt(choice).Value;
-
-                    return String.Format(selected, args).Replace("\\n", Environment.NewLine);
-                }
-                else
-                {
-                    throw new Exception($"Error getting string {key} with parameters {(args != null && args.Length > 0 ? args.Aggregate((a, b) => a + "," + b.ToString()) : "none")}");
-                }
-            }
-            catch (Exception e)
-            {
-                try
-                {
-                    //try the english string to be sure
-                    var strings =
-                        Program.English.Descendants("string").FirstOrDefault(x => x.Attribute("key")?.Value == key);
-                    var values = strings?.Descendants("value");
-                    if (values != null)
-                    {
-                        var choice = Helper.RandomNum(values.Count());
-                        var selected = values.ElementAt(choice - 1).Value;
-                        // ReSharper disable once AssignNullToNotNullAttribute
-                        return String.Format(selected, args).Replace("\\n", Environment.NewLine);
-                    }
-                    else
-                        throw new Exception("Cannot load english string for fallback");
-                }
-                catch
-                {
-                    throw new Exception(
-                        $"Error getting string {key} with parameters {(args != null && args.Length > 0 ? args.Aggregate((a, b) => a + "," + b.ToString()) : "none")}",
-                        e);
-                }
-            }
+            return Program.Translations.GetTranslation(key, Language, args);
         }
 
         #endregion

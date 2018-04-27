@@ -10,6 +10,9 @@ using CriminalDanceBot.Handlers;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.Payments;
 using CriminalDanceBot.Models;
+using System.IO;
+using Telegram.Bot.Types.InlineKeyboardButtons;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace CriminalDanceBot
 {
@@ -144,10 +147,9 @@ namespace CriminalDanceBot
         }
 
         [Command(Trigger = "reloadlangs", DevOnly = true)]
-        public static void ReloadLang(Message msg, string[] args)
+        public static void ReloadLangs(Message msg, string[] args)
         {
-            Program.English = Helper.ReadEnglish();
-            Program.Langs = Helper.ReadLanguageFiles();
+            Program.Translations.ReloadLanguages();
             msg.Reply("Done.");
         }
 
@@ -157,21 +159,38 @@ namespace CriminalDanceBot
             try
             {
                 var id = msg.Chat.Id;
-                if (msg.ReplyToMessage?.Type != MessageType.DocumentMessage)
+                if (msg.ReplyToMessage?.Type != MessageType.DocumentMessage || Path.GetExtension(msg.ReplyToMessage?.Document?.FileName ?? "") != ".xml")
                 {
                     Bot.Send(id, "Please reply to the file with /uploadlang");
                     return;
                 }
                 var fileid = msg.ReplyToMessage.Document?.FileId;
                 if (fileid != null)
-                    Commands.UploadFile(fileid, id,
-                        msg.ReplyToMessage.Document.FileName,
-                        msg.MessageId);
+                {
+                    msg.ReplyNoQuote(Program.Translations.PrepareUploadLanguage(msg.ReplyToMessage.Document, out bool CanUpload));
+                    if (CanUpload)
+                    {
+                        var filename = Path.GetFileNameWithoutExtension(msg.ReplyToMessage.Document.FileName);
+                        var buttons = new[]
+                        {
+                            new InlineKeyboardCallbackButton($"New", $"upload|{id}|{filename}"),
+                            new InlineKeyboardCallbackButton($"Old", $"upload|{id}|current")
+                        };
+                        msg.Reply("Which file do you want to keep?", new InlineKeyboardMarkup(buttons));
+                    }
+                    else msg.Reply("Fatal errors present, cannot upload!");
+                }
             }
             catch (Exception e)
             {
                 Bot.Send(msg.Chat.Id, e.Message, parseMode: ParseMode.Default);
             }
+        }
+
+        [Command(Trigger = "validatelangs", DevOnly = true)]
+        public static void ValidateLangs(Message msg, string[] args)
+        {
+            msg.Reply("Which language file do you want to validate?", Handler.GetValidateLangsMenu());
         }
 
         [Command(Trigger = "rules")]
@@ -209,7 +228,7 @@ namespace CriminalDanceBot
                 return;
             }
             else
-            { 
+            {
                 if (!int.TryParse(argList[1], out money))
                 {
                     msg.Reply(GetTranslation("DonateInputValue", GetLanguage(msg.From.Id)));
@@ -273,7 +292,7 @@ namespace CriminalDanceBot
                 var numOfGames = db.GetPlayerNumOfGames(playerId).First().Value;
                 var numOfCrimWins = db.getCrimWinTimes(playerId).First().Value;
                 var numOfDogWins = db.getDogWinTimes(playerId).First().Value;
-                var send = GetTranslation("StatsDetails", GetLanguage(isGroup == true ? msg.Chat.Id : playerId), 
+                var send = GetTranslation("StatsDetails", GetLanguage(isGroup == true ? msg.Chat.Id : playerId),
                     playerName,
                     achvCount.ToBold(),
                     numOfGames.ToBold(),

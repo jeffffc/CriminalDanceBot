@@ -23,7 +23,7 @@ namespace CriminalDanceBot.Handlers
                 string[] args = query.Data.Split('|');
 
                 //dev only buttons
-                if (new[] { "upload", "update" }.Contains(args[0]))
+                if (new[] { "upload", "update", "validate" }.Contains(args[0]))
                 {
                     //global admin only commands
                     if (!Constants.Dev.Contains(query.From.Id) /* && !Helpers.IsGlobalAdmin(query.From.Id) */)
@@ -106,7 +106,7 @@ namespace CriminalDanceBot.Handlers
                             Bot.Edit(query.Message.Chat.Id, query.Message.MessageId, "No action taken.");
                             return;
                         }
-                        Commands.UseNewLanguageFile(args[2], query.Message.Chat.Id, query.Message.MessageId);
+                        Bot.Edit(query.Message.Chat.Id, query.Message.MessageId, Program.Translations.UploadLanguage(args[2]));
                         return;
                     case "update":
                         if (args[1] == "yes")
@@ -118,6 +118,14 @@ namespace CriminalDanceBot.Handlers
                         }
                         else
                             Bot.Api.EditMessageTextAsync(query.Message.Chat.Id, query.Message.MessageId, "Ok. I will do nothing now.");
+                        return;
+                    case "validate":
+                        if (args[1] == "cancel")
+                        {
+                            Bot.Edit(query.Message.Chat.Id, query.Message.MessageId, "Cancelled.");
+                            return;
+                        }
+                        Bot.Edit(query.Message.Chat.Id, query.Message.MessageId, Program.Translations.ValidateLanguage(args[2]));
                         return;
                 }
 
@@ -161,7 +169,7 @@ namespace CriminalDanceBot.Handlers
         {
             List<InlineKeyboardButton> buttons = new List<InlineKeyboardButton>();
             //base menu
-            foreach (string lang in Program.Langs.Keys)
+            foreach (string lang in Program.Translations.GetLanguageVariants().Select(x => x.FileName))
                 buttons.Add(new InlineKeyboardCallbackButton(lang, !setlang ? $"config|lang|{id}|{lang}" : $"setlang|lang|{id}|{lang}"));
             var twoMenu = new List<InlineKeyboardButton[]>();
             for (var i = 0; i < buttons.Count; i++)
@@ -185,7 +193,7 @@ namespace CriminalDanceBot.Handlers
         {
             List<InlineKeyboardButton> buttons = new List<InlineKeyboardButton>();
             //base menu
-            foreach (string lang in Program.Langs.Keys)
+            foreach (string lang in Program.Translations.GetLanguageVariants().Select(x => x.FileName))
                 buttons.Add(new InlineKeyboardCallbackButton(lang, $"getlang|get|{lang}"));
             var twoMenu = new List<InlineKeyboardButton[]>();
             for (var i = 0; i < buttons.Count; i++)
@@ -199,6 +207,29 @@ namespace CriminalDanceBot.Handlers
                 i++;
             }
             twoMenu.Add(new[] { new InlineKeyboardCallbackButton("Cancel", $"getlang|cancel") });
+
+            var menu = new InlineKeyboardMarkup(twoMenu.ToArray());
+            return menu;
+        }
+
+        internal static InlineKeyboardMarkup GetValidateLangsMenu()
+        {
+            List<InlineKeyboardButton> buttons = new List<InlineKeyboardButton>();
+            //base menu
+            foreach (string lang in Program.Translations.GetLanguageVariants().Select(x => x.FileName))
+                buttons.Add(new InlineKeyboardCallbackButton(lang, $"validate|val|{lang}"));
+            var twoMenu = new List<InlineKeyboardButton[]>();
+            for (var i = 0; i < buttons.Count; i++)
+            {
+                if (buttons.Count - 1 == i)
+                {
+                    twoMenu.Add(new[] { buttons[i] });
+                }
+                else
+                    twoMenu.Add(new[] { buttons[i], buttons[i + 1] });
+                i++;
+            }
+            twoMenu.Add(new[] { new InlineKeyboardCallbackButton("Cancel", $"validate|cancel") });
 
             var menu = new InlineKeyboardMarkup(twoMenu.ToArray());
             return menu;
