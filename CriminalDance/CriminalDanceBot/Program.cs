@@ -36,7 +36,7 @@ namespace CriminalDanceBot
             Bot.Gm = new GameManager();
 
             Translations = new BotTranslationManager(token, Constants.GetLangDirectory(false), Constants.GetLangDirectory(true), 
-                "English", ParseMode.Html, false);
+                "English", TelegramBotTranslations.Models.ParseMode.Html, false);
 
             token = null;
 

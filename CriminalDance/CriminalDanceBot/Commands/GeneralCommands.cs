@@ -11,7 +11,6 @@ using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.Payments;
 using CriminalDanceBot.Models;
 using System.IO;
-using Telegram.Bot.Types.InlineKeyboardButtons;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace CriminalDanceBot
@@ -159,7 +158,7 @@ namespace CriminalDanceBot
             try
             {
                 var id = msg.Chat.Id;
-                if (msg.ReplyToMessage?.Type != MessageType.DocumentMessage || Path.GetExtension(msg.ReplyToMessage?.Document?.FileName ?? "") != ".xml")
+                if (msg.ReplyToMessage?.Type != MessageType.Document || Path.GetExtension(msg.ReplyToMessage?.Document?.FileName ?? "") != ".xml")
                 {
                     Bot.Send(id, "Please reply to the file with /uploadlang");
                     return;
@@ -167,14 +166,14 @@ namespace CriminalDanceBot
                 var fileid = msg.ReplyToMessage.Document?.FileId;
                 if (fileid != null)
                 {
-                    msg.ReplyNoQuote(Program.Translations.PrepareUploadLanguage(msg.ReplyToMessage.Document, out bool CanUpload));
+                    msg.ReplyNoQuote(Program.Translations.PrepareUploadLanguage(msg.ReplyToMessage.Document.FileId, msg.ReplyToMessage.Document.FileName, out bool CanUpload));
                     if (CanUpload)
                     {
                         var filename = Path.GetFileNameWithoutExtension(msg.ReplyToMessage.Document.FileName);
                         var buttons = new[]
                         {
-                            new InlineKeyboardCallbackButton($"New", $"upload|{id}|{filename}"),
-                            new InlineKeyboardCallbackButton($"Old", $"upload|{id}|current")
+                            InlineKeyboardButton.WithCallbackData($"New", $"upload|{id}|{filename}"),
+                            InlineKeyboardButton.WithCallbackData($"Old", $"upload|{id}|current")
                         };
                         msg.Reply("Which file do you want to keep?", new InlineKeyboardMarkup(buttons));
                     }

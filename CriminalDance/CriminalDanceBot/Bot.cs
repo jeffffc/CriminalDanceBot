@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.InlineKeyboardButtons;
+using Telegram.Bot.Types.InputFiles;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace CriminalDanceBot
@@ -28,7 +28,7 @@ namespace CriminalDanceBot
             return BotMethods.Send(chatId, text, replyMarkup, parseMode, disableWebPagePreview, disableNotification);
         }
 
-        internal static Message Edit(long chatId, int oldMessageId, string text, IReplyMarkup replyMarkup = null, ParseMode parseMode = ParseMode.Html, bool disableWebPagePreview = true, bool disableNotification = false)
+        internal static Message Edit(long chatId, int oldMessageId, string text, InlineKeyboardMarkup replyMarkup = null, ParseMode parseMode = ParseMode.Html, bool disableWebPagePreview = true, bool disableNotification = false)
         {
             try
             {
@@ -135,7 +135,7 @@ namespace CriminalDanceBot
                 if (r == null)
                 {
                     return m.Reply(Commands.GetTranslation("NotStartedBot", Commands.GetLanguage(m.From.Id)), new InlineKeyboardMarkup(new InlineKeyboardButton[] {
-                        new InlineKeyboardUrlButton("Start me!", $"https://t.me/{Bot.Me.Username}") }));
+                        InlineKeyboardButton.WithUrl("Start me!", $"https://t.me/{Bot.Me.Username}") }));
                 }
                 if (m.Chat.Type != ChatType.Private)
                     m.Reply(Commands.GetTranslation("SentPM", Commands.GetLanguage(m.From.Id)));
@@ -158,7 +158,7 @@ namespace CriminalDanceBot
                     if (r == null)
                     {
                         m.Reply(Commands.GetTranslation("NotStartedBot", Commands.GetLanguage(m.From.Id)), new InlineKeyboardMarkup(new InlineKeyboardButton[] {
-                            new InlineKeyboardUrlButton("Start me!", $"https://t.me/{Bot.Me.Username}") }));
+                            InlineKeyboardButton.WithUrl("Start me!", $"https://t.me/{Bot.Me.Username}") }));
                         return;
                     }
                 }
@@ -171,7 +171,7 @@ namespace CriminalDanceBot
                 m.Reply(Commands.GetTranslation("SentPM", Commands.GetLanguage(m.From.Id)));
         }
 
-        public static Message Edit(long chatId, int oldMessageId, string text, IReplyMarkup replyMarkup = null, ParseMode parseMode = ParseMode.Html, bool disableWebPagePreview = true, bool disableNotification = false)
+        public static Message Edit(long chatId, int oldMessageId, string text, InlineKeyboardMarkup replyMarkup = null, ParseMode parseMode = ParseMode.Html, bool disableWebPagePreview = true, bool disableNotification = false)
         {
             try
             {
@@ -197,11 +197,11 @@ namespace CriminalDanceBot
             }
         }
 
-        public static Message SendDocument(long chatId, FileToSend fileToSend, string caption = null, IReplyMarkup replyMarkup = null, bool disableNotification = false)
+        public static Message SendDocument(long chatId, InputOnlineFile fileToSend, string caption = null, IReplyMarkup replyMarkup = null, bool disableNotification = false, ParseMode parseMode = ParseMode.Html)
         {
             try
             {
-                return Bot.Api.SendDocumentAsync(chatId, fileToSend, caption, disableNotification, 0, replyMarkup).Result;
+                return Bot.Api.SendDocumentAsync(chatId, fileToSend, caption, parseMode, disableNotification, 0, replyMarkup).Result;
             }
             catch (Exception e)
             {
@@ -218,7 +218,7 @@ namespace CriminalDanceBot
             {
                 var t = Bot.Api.AnswerCallbackQueryAsync(query.Id, text, popup); 
                 t.Wait();
-                return t.Result;            // Await this call in order to be sure it is sent in time
+                return true;            // Await this call in order to be sure it is sent in time
             }
             catch (Exception e)
             {

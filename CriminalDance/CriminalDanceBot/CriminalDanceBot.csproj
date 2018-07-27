@@ -75,11 +75,11 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="Telegram.Bot, Version=13.4.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Telegram.Bot.13.4.0\lib\net45\Telegram.Bot.dll</HintPath>
+    <Reference Include="Telegram.Bot, Version=14.6.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Telegram.Bot.14.6.0\lib\net45\Telegram.Bot.dll</HintPath>
     </Reference>
-    <Reference Include="TelegramBotTranslations, Version=1.0.7.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\TelegramBotTranslations.1.0.7\lib\net452\TelegramBotTranslations.dll</HintPath>
+    <Reference Include="TelegramBotTranslations, Version=2.0.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\TelegramBotTranslations.2.0.5\lib\net452\TelegramBotTranslations.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

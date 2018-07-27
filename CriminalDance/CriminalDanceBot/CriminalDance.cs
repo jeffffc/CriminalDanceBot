@@ -10,7 +10,6 @@ using System.Threading;
 using Database;
 using System.Diagnostics;
 using System.IO;
-using Telegram.Bot.Types.InlineKeyboardButtons;
 using System.Xml.Linq;
 
 namespace CriminalDanceBot
@@ -1289,7 +1288,7 @@ namespace CriminalDanceBot
             for (int i = 0; i < buttons.Count; i++)
             {
                 row.Clear();
-                row.Add(new InlineKeyboardCallbackButton(buttons[i].Item1, buttons[i].Item2));
+                row.Add(InlineKeyboardButton.WithCallbackData(buttons[i].Item1, buttons[i].Item2));
                 rows.Add(row.ToArray());
             }
             return new InlineKeyboardMarkup(rows.ToArray());
@@ -1308,7 +1307,7 @@ namespace CriminalDanceBot
             for (int i = 0; i < buttons.Count; i++)
             {
                 row.Clear();
-                row.Add(new InlineKeyboardCallbackButton(buttons[i].Item1, buttons[i].Item2));
+                row.Add(InlineKeyboardButton.WithCallbackData(buttons[i].Item1, buttons[i].Item2));
                 rows.Add(row.ToArray());
             }
             return new InlineKeyboardMarkup(rows.ToArray());
@@ -1318,7 +1317,7 @@ namespace CriminalDanceBot
         {
             var row = new List<InlineKeyboardButton>();
             var rows = new List<InlineKeyboardButton[]>();
-            row.Add(new InlineKeyboardUrlButton(GetTranslation("StartMe"), $"https://telegram.me/{Bot.Me.Username}"));
+            row.Add(InlineKeyboardButton.WithUrl(GetTranslation("StartMe"), $"https://telegram.me/{Bot.Me.Username}"));
             rows.Add(row.ToArray());
             return new InlineKeyboardMarkup(rows.ToArray());
         }

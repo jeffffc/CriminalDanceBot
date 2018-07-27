@@ -16,7 +16,7 @@ namespace CriminalDanceBot.Handlers
         {
             switch (msg.Type)
             {
-                case MessageType.TextMessage:
+                case MessageType.Text:
                     string text = msg.Text;
                     string[] args = text.Contains(' ')
                                     ? new[] { text.Split(' ')[0].ToLower(), text.Remove(0, text.IndexOf(' ') + 1) }
@@ -76,9 +76,6 @@ namespace CriminalDanceBot.Handlers
                     {
                         var g = Bot.Gm.GetGameByChatId(msg.Chat.Id);
                     }
-                    break;
-                case MessageType.ServiceMessage:
-                    //
                     break;
                 case MessageType.SuccessfulPayment:
                     var randomRef = Guid.NewGuid().ToString();

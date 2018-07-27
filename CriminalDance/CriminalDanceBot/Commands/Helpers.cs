@@ -9,7 +9,6 @@ using System.Net;
 using System.Xml.Linq;
 using Telegram.Bot.Types.Enums;
 using System.Threading;
-using Telegram.Bot.Types.InlineKeyboardButtons;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace CriminalDanceBot
@@ -45,7 +44,7 @@ namespace CriminalDanceBot
         {
             var row = new List<InlineKeyboardButton>();
             var rows = new List<InlineKeyboardButton[]>();
-            row.Add(new InlineKeyboardUrlButton(GetTranslation("StartMe", GetLanguage(id)), $"https://telegram.me/{Bot.Me.Username}"));
+            row.Add(InlineKeyboardButton.WithUrl(GetTranslation("StartMe", GetLanguage(id)), $"https://telegram.me/{Bot.Me.Username}"));
             rows.Add(row.ToArray());
             return new InlineKeyboardMarkup(rows.ToArray());
         }

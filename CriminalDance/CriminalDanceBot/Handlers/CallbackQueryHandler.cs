@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Database;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.InlineKeyboardButtons;
 using Telegram.Bot.Types.ReplyMarkups;
 using System.IO;
 using System.Diagnostics;
 using System.Threading;
+using Telegram.Bot.Types.InputFiles;
 
 namespace CriminalDanceBot.Handlers
 {
@@ -85,7 +85,7 @@ namespace CriminalDanceBot.Handlers
                                 lang += ".xml";
                                 using (var sr = new StreamReader(Path.Combine(Constants.GetLangDirectory(), lang)))
                                 {
-                                    var file = new FileToSend(lang, sr.BaseStream);
+                                    var file = new InputOnlineFile(sr.BaseStream, lang);
                                     BotMethods.SendDocument(query.Message.Chat.Id, file);
                                 }
                             }
@@ -153,8 +153,8 @@ namespace CriminalDanceBot.Handlers
         {
             List<InlineKeyboardButton> buttons = new List<InlineKeyboardButton>();
             //base menu
-            buttons.Add(new InlineKeyboardCallbackButton("Change Language", $"config|lang|{id}"));
-            buttons.Add(new InlineKeyboardCallbackButton("Done", $"config|done"));
+            buttons.Add(InlineKeyboardButton.WithCallbackData("Change Language", $"config|lang|{id}"));
+            buttons.Add(InlineKeyboardButton.WithCallbackData("Done", $"config|done"));
             var twoMenu = new List<InlineKeyboardButton[]>();
             for (var i = 0; i < buttons.Count; i++)
             {
@@ -170,7 +170,7 @@ namespace CriminalDanceBot.Handlers
             List<InlineKeyboardButton> buttons = new List<InlineKeyboardButton>();
             //base menu
             foreach (string lang in Program.Translations.GetLanguageVariants().Select(x => x.FileName))
-                buttons.Add(new InlineKeyboardCallbackButton(lang, !setlang ? $"config|lang|{id}|{lang}" : $"setlang|lang|{id}|{lang}"));
+                buttons.Add(InlineKeyboardButton.WithCallbackData(lang, !setlang ? $"config|lang|{id}|{lang}" : $"setlang|lang|{id}|{lang}"));
             var twoMenu = new List<InlineKeyboardButton[]>();
             for (var i = 0; i < buttons.Count; i++)
             {
@@ -183,7 +183,7 @@ namespace CriminalDanceBot.Handlers
                 i++;
             }
             if (!setlang)
-                twoMenu.Add(new[] { new InlineKeyboardCallbackButton("Back", $"config|back|{id}") });
+                twoMenu.Add(new[] { InlineKeyboardButton.WithCallbackData("Back", $"config|back|{id}") });
 
             var menu = new InlineKeyboardMarkup(twoMenu.ToArray());
             return menu;
@@ -194,7 +194,7 @@ namespace CriminalDanceBot.Handlers
             List<InlineKeyboardButton> buttons = new List<InlineKeyboardButton>();
             //base menu
             foreach (string lang in Program.Translations.GetLanguageVariants().Select(x => x.FileName))
-                buttons.Add(new InlineKeyboardCallbackButton(lang, $"getlang|get|{lang}"));
+                buttons.Add(InlineKeyboardButton.WithCallbackData(lang, $"getlang|get|{lang}"));
             var twoMenu = new List<InlineKeyboardButton[]>();
             for (var i = 0; i < buttons.Count; i++)
             {
@@ -206,7 +206,7 @@ namespace CriminalDanceBot.Handlers
                     twoMenu.Add(new[] { buttons[i], buttons[i + 1] });
                 i++;
             }
-            twoMenu.Add(new[] { new InlineKeyboardCallbackButton("Cancel", $"getlang|cancel") });
+            twoMenu.Add(new[] { InlineKeyboardButton.WithCallbackData("Cancel", $"getlang|cancel") });
 
             var menu = new InlineKeyboardMarkup(twoMenu.ToArray());
             return menu;
@@ -217,7 +217,7 @@ namespace CriminalDanceBot.Handlers
             List<InlineKeyboardButton> buttons = new List<InlineKeyboardButton>();
             //base menu
             foreach (string lang in Program.Translations.GetLanguageVariants().Select(x => x.FileName))
-                buttons.Add(new InlineKeyboardCallbackButton(lang, $"validate|val|{lang}"));
+                buttons.Add(InlineKeyboardButton.WithCallbackData(lang, $"validate|val|{lang}"));
             var twoMenu = new List<InlineKeyboardButton[]>();
             for (var i = 0; i < buttons.Count; i++)
             {
@@ -229,7 +229,7 @@ namespace CriminalDanceBot.Handlers
                     twoMenu.Add(new[] { buttons[i], buttons[i + 1] });
                 i++;
             }
-            twoMenu.Add(new[] { new InlineKeyboardCallbackButton("Cancel", $"validate|cancel") });
+            twoMenu.Add(new[] { InlineKeyboardButton.WithCallbackData("Cancel", $"validate|cancel") });
 
             var menu = new InlineKeyboardMarkup(twoMenu.ToArray());
             return menu;
