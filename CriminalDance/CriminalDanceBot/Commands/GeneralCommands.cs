@@ -195,11 +195,8 @@ namespace CriminalDanceBot
         [Command(Trigger = "rules")]
         public static void Rules(Message msg, string[] args)
         {
-            try
-            {
-                Bot.Send(msg.From.Id, GetTranslation("Rules", GetLanguage(msg.From.Id)));
-            }
-            catch
+            var m = Bot.Send(msg.From.Id, GetTranslation("Rules", GetLanguage(msg.From.Id)));
+            if (m == null)
             {
                 msg.Reply(GetTranslation("NotStartedBot", GetLanguage(msg.From.Id)), GenerateStartMe(msg.From.Id));
                 return;
