@@ -189,7 +189,11 @@ namespace CriminalDanceBot
                     }
                     while (NowAction != GameAction.Ending)
                     {
-                        _playerList = Send(GeneratePlayerList()).MessageId;
+                        var playerListMsg = Send(GeneratePlayerList());
+                        if (playerListMsg == null)
+                            Phase = GamePhase.Ending;
+                        else
+                            _playerList = playerListMsg.MessageId;
                         while (NowAction != GameAction.Next)
                         {
                             if (Phase == GamePhase.Ending) return;
@@ -298,7 +302,7 @@ namespace CriminalDanceBot
 
                 try
                 {
-                    if (p.CurrentQuestion.MessageId != 0 && p.CardChoice1 == null)
+                    if (p.CurrentQuestion != null && p.CurrentQuestion.MessageId != 0 && p.CardChoice1 == null)
                     {
                         SendTimesUp(p, p.CurrentQuestion.MessageId);
                     }
@@ -956,12 +960,9 @@ namespace CriminalDanceBot
                 };
                 try
                 {
-                    Message ret;
-                    try
-                    {
-                        ret = SendPM(p, GetTranslation("YouJoined", GroupName));
-                    }
-                    catch
+                    Message ret = SendPM(p, GetTranslation("YouJoined", GroupName));
+
+                    if (ret == null)
                     {
                         Bot.Send(ChatId, GetTranslation("NotStartedBot", GetName(u)), GenerateStartMe());
                         return;
@@ -1200,6 +1201,8 @@ namespace CriminalDanceBot
                                 if (p.Witnessing != true)
                                 {
                                     var sent = SendPM(p, cards);
+                                    if (sent == null)
+                                        return;
                                     p.Witnessing = true;
                                     Thread.Sleep(Constants.WitnessTime * 1000);
                                     Bot.Api.DeleteMessageAsync(sent.Chat.Id, sent.MessageId);
@@ -1257,6 +1260,12 @@ namespace CriminalDanceBot
         public Message SendMenu(XPlayer p, string msg, InlineKeyboardMarkup markup, QuestionType qType)
         {
             var sent = Bot.Send(p.TelegramUserId, msg, markup);
+            if (sent == null)
+            {
+                p.CurrentQuestion = null;
+                return null;
+            }
+
             p.CurrentQuestion = new QuestionAsked
             {
                 Type = qType,
