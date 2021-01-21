@@ -871,6 +871,7 @@ namespace CriminalDanceBot
                     {
                         UseCard(p2, cardChosen, true);
                         p2.Cards.Add(p.TempCard); //get the dog as compensation
+                        p2.UsedUp = false; //make sure that after getting a card as compensation UsedUp will not be true
                         Send(GetTranslation("DogTransferCard", GetName(p), GetName(p2), GetName(cardChosen)));
                         p.CardChanged = true;
                         p2.CardChanged = true;
